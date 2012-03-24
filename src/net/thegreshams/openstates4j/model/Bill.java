@@ -15,11 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.thegreshams.openstates4j.model.Committee.Member;
-import net.thegreshams.openstates4j.model.subs.Action;
-import net.thegreshams.openstates4j.model.subs.Document;
-import net.thegreshams.openstates4j.model.subs.Legislator.Sponsor;
-import net.thegreshams.openstates4j.model.subs.Version;
-import net.thegreshams.openstates4j.model.subs.Vote;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -79,7 +74,7 @@ public final class Bill extends Base {
 		
 		private static final long serialVersionUID = 1L;
 		
-		public		@JsonProperty( "url" )				URL						url;
+		public		@JsonProperty( "url" )					URL						url;
 
 		@Override
 		public String toString() {
@@ -94,6 +89,164 @@ public final class Bill extends Base {
 			return sb.toString();
 		}
 	}
+	
+	
+	/**
+	 * Action
+	 * 
+	 * @author Brandon Gresham <brandon@thegreshams.net>
+	 */
+	public static class Action extends Base {
+		
+		private static final long serialVersionUID = 1L;
+		
+		public		@JsonProperty( "date" )					Date					date;
+		public		@JsonProperty( "actor" )				String					actor;
+		public		@JsonProperty( "action" )				String					action;
+		public		@JsonProperty( "type" )					List<String>			types;
+
+		@Override
+		public String toString() {
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append( Member.class.getSimpleName() )
+				.append( " [" )
+				.append( "(actor:" ).append( this.actor ).append( ") " )
+				.append( "(action:" ).append( this.action ).append( ") " )
+				.append( "(date:" ).append( this.date ).append( ") " )
+				.append( "]" );
+			
+			return sb.toString();
+		}
+	}
+	
+	
+	/**
+	 * Document
+	 * 
+	 * @author Brandon Gresham <brandon@thegreshams.net>
+	 */
+	public static class Document extends Base {
+		
+		private static final long serialVersionUID = 1L;
+		
+		public		@JsonProperty( "url" )					URL						url;
+		public		@JsonProperty( "name" )					String					name;
+
+		@Override
+		public String toString() {
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append( Member.class.getSimpleName() )
+				.append( " [" )
+				.append( "(name:" ).append( this.name ).append( ") " )
+				.append( "(url:" ).append( this.url ).append( ") " )
+				.append( "]" );
+			
+			return sb.toString();
+		}
+	}
+	
+	
+	/**
+	 * Version
+	 * 
+	 * @author Brandon Gresham <brandon@thegreshams.net>
+	 */
+	public static class Version extends Base {
+		
+		private static final long serialVersionUID = 1L;
+		
+		public		@JsonProperty( "url" )					URL						url;
+		public		@JsonProperty( "name" )					String					name;
+
+		@Override
+		public String toString() {
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append( Member.class.getSimpleName() )
+				.append( " [" )
+				.append( "(name:" ).append( this.name ).append( ") " )
+				.append( "(url:" ).append( this.url ).append( ") " )
+				.append( "]" );
+			
+			return sb.toString();
+		}
+	}
+	
+	
+	/**
+	 * Sponsor
+	 * 
+	 * @author Brandon Gresham <brandon@thegreshams.net>
+	 */
+	public static class Sponsor extends Base {
+		
+		private static final long serialVersionUID = 1L;
+		
+		public		@JsonProperty( "leg_id" )				String					legislatorId;
+		public		@JsonProperty( "name" )					String					name;
+		public		@JsonProperty( "type" )					String					type;
+
+		@Override
+		public String toString() {
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append( Member.class.getSimpleName() )
+				.append( " [" )
+				.append( "(id:" ).append( this.legislatorId ).append( ") " )
+				.append( "(name:" ).append( this.name ).append( ") " )
+				.append( "(type:" ).append( this.type ).append( ") " )
+				.append( "]" );
+			
+			return sb.toString();
+		}
+	}
+	
+	
+	/**
+	 * Vote
+	 * 
+	 * @author Brandon Gresham <brandon@thegreshams.net>
+	 */
+	public static class Vote extends Base {
+		
+		private static final long serialVersionUID = 1L;
+		
+		public		@JsonProperty( "date" )					Date					date;
+		public		@JsonProperty( "chamber" )				String					chamber;
+		public		@JsonProperty( "motion" )				String					motion;
+		public		@JsonProperty( "passed" )				boolean					passed;
+		public		@JsonProperty( "type" )					String					type;
+		public		@JsonProperty( "yes_count" )			int						yesCount;
+		public		@JsonProperty( "no_count" )				int						noCount;
+		public		@JsonProperty( "other_count" )			int						otherCount;
+		public		@JsonProperty( "yes_votes" )			List<Legislator>		yesVotes;
+		public		@JsonProperty( "no_votes" )				List<Legislator>		noVotes;
+		public		@JsonProperty( "other_votes" )			List<Legislator>		otherVotes;
+
+		@Override
+		public String toString() {
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append( Member.class.getSimpleName() )
+				.append( " [" )
+				.append( "(date:" ).append( this.date ).append( ") " )
+				.append( "(chamber:" ).append( this.chamber ).append( ") " )
+				.append( "(motion:" ).append( this.motion ).append( ") " )
+				.append( "(passed:" ).append( this.passed ).append( ") " )
+				.append( "]" );
+			
+			return sb.toString();
+		}
+	}
+	
+	
 
 	
 	
