@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
@@ -82,6 +83,38 @@ public class District extends Base {
 		return sb.toString();
 	}
 	
+	public static List<District> find( String stateAbbr, String chamber, String apikey ) throws IOException {
+		
+		// build the URL
+		StringBuilder query = new StringBuilder( "http://openstates.org/api/v1/districts/" + stateAbbr + "/" );
+		if( chamber != null ) {
+			query.append( chamber + "/" );
+		}
+		query.append( "?apikey=" + apikey );
+		URL url = new URL( query.toString() );
+		
+		// fetch the data
+		InputStream is = url.openStream();
+		Writer writer = new StringWriter();
+		char[] buffer = new char[1024];
+		Reader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
+		int n;
+		while( (n=reader.read(buffer)) != -1 ) {
+			writer.write(buffer, 0, n);
+		}
+		is.close();
+		String jsonResponse = writer.toString();
+		
+		// map to result
+		ObjectMapper mapper = new ObjectMapper();
+		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+		mapper.setDateFormat( sdf );
+		List<District> result = mapper.readValue( jsonResponse, new TypeReference<List<District>>(){} );
+		
+		return result;
+	}
+
+	
 	public static void main( String[] args ) throws IOException {
  
 		// get the API key
@@ -96,36 +129,17 @@ public class District extends Base {
 		if( openStates_apiKey == null || openStates_apiKey.trim().isEmpty() ) {
 			throw new IllegalArgumentException( "Program-argument 'apiKey' not found but required" );
 		}
-				
-		// get an Event
-		URL url = new URL( "http://openstates.org/api/v1/districts/nc/upper/?apikey=" + openStates_apiKey );
-		InputStream is = url.openStream();
-		Writer writer = new StringWriter();
-		char[] buffer = new char[1024];
-		Reader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
-		int n;
-		while( (n=reader.read(buffer)) != -1 ) {
-			writer.write(buffer, 0, n);
-		}
-		is.close();
-		String jsonEvent = writer.toString();
-		System.out.println( "JSON:\n" + jsonEvent + "\n\n" );
 		
+		// search by just state
+		List<District> districts = District.find( "ut", null, openStates_apiKey );
+		System.out.println( "Found " + districts.size() + " districts in Utah" );
 		
-		// perform the mapping, spit-out the object
-		ObjectMapper mapper = new ObjectMapper();	
-		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		mapper.setDateFormat( sdf );
-		List<District> districts = mapper.readValue( jsonEvent, new TypeReference<List<District>>(){} );
-		District district1 = districts.get(0);
-		System.out.println( "\n\n" + district1 );
-		Map<String, Object> optionalProps = district1.optionalProperties;
-		Iterator<String> it = optionalProps.keySet().iterator();
-		System.out.println( "Optional Properties..." );
-		while( it.hasNext() ) {
-			String key = it.next();
-			System.out.println( "   --> " + key + ":" + optionalProps.get(key) );
-		}
+		// search by both state and lower-house and then by upper-house
+		districts = District.find( "ut", "lower", openStates_apiKey );
+		System.out.println( "Found " + districts.size() + " districts in Utah's lower-house" );
+		districts = District.find( "ut", "upper", openStates_apiKey );
+		System.out.println( "Found " + districts.size() + " districts in Utah's upper-house" );
+		
 	}
 
 }
