@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.thegreshams.openstates4j.model.Committee.Member;
+
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -24,7 +26,79 @@ public class Legislator extends Base {
 	
 	public 		@JsonProperty( "leg_id" )					String				id;
 	public		@JsonProperty( "full_name" )				String				fullName;
+	public		@JsonProperty( "first_name" )				String				firstName;
+	public		@JsonProperty( "last_name" )				String				lastName;
+	public		@JsonProperty( "middle_name" )				String				middleName;
+	public		@JsonProperty( "suffixes" )					String				suffixes;
+	public		@JsonProperty( "url" )						URL					url;
+	public		@JsonProperty( "email" )					String				email;
+	public		@JsonProperty( "photo_url" )				URL					photoUrl;
+	public		@JsonProperty( "active" )					boolean				isActive;
+	public		@JsonProperty( "state" )					String				state;
+	public		@JsonProperty( "chamber" )					String				chamber;
+	public		@JsonProperty( "district" )					String				district;
+	public		@JsonProperty( "party" )					String				party;
+	public		@JsonProperty( "roles" )					List<Role>			roles;
+	public		@JsonProperty( "old_roles" )				Map<String, List<Role>>	oldRoles;
+	public		@JsonProperty( "sources" )					List<Source>		sources;
 	
+
+	
+	
+	/**
+	 * Source
+	 * 
+	 * @author Brandon Gresham <brandon@thegreshams.net>
+	 */
+	public static class Source extends Base {
+		
+		private static final long serialVersionUID = 1L;
+		
+		public		@JsonProperty( "url" )						URL					url;
+
+		@Override
+		public String toString() {
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append( Member.class.getSimpleName() )
+				.append( " [" )
+				.append( "(url:" ).append( this.url ).append( ") " )
+				.append( "]" );
+			
+			return sb.toString();
+		}
+	}
+
+	/**
+	 * Role
+	 * 
+	 * @author Brandon Gresham <brandon@thegreshams.net>
+	 */
+	public static class Role extends Base {
+		
+		private static final long serialVersionUID = 1L;
+		
+		public		@JsonProperty( "type" )						String				type;
+		public		@JsonProperty( "term" )						String				term;
+		public		@JsonProperty( "chamber" )					String				chamber;
+		public		@JsonProperty( "district" )					String				district;
+		public		@JsonProperty( "party" )					String				party;
+		public		@JsonProperty( "committee" )				String				committee;
+
+		@Override
+		public String toString() {
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append( Member.class.getSimpleName() )
+				.append( " [" )
+				.append( "(type:" ).append( this.type ).append( ") " )
+				.append( "]" );
+			
+			return sb.toString();
+		}
+	}
 
 	
 	/**
@@ -61,7 +135,7 @@ public class Legislator extends Base {
 		} 
 				
 		// get an Event
-		URL url = new URL( "http://openstates.org/api/v1/legislators/?state=ca&party=democratic&first_name=Bob&active=true&apikey=" + openStates_apiKey );
+		URL url = new URL( "http://openstates.org/api/v1/legislators/CAL000006/?apikey=" + openStates_apiKey );
 		InputStream is = url.openStream();
 		Writer writer = new StringWriter();
 		char[] buffer = new char[1024];
@@ -79,15 +153,14 @@ public class Legislator extends Base {
 		ObjectMapper mapper = new ObjectMapper();	
 		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
 		mapper.setDateFormat( sdf );
-		List<Legislator> legislators = mapper.readValue( jsonEvent, new TypeReference<List<Legislator>>(){} );
-		Legislator legislator1 = legislators.get(0);
-		System.out.println( "\n\n" + legislator1 );
-		Map<String, Object> optionalProps = legislator1.optionalProperties;
-		Iterator<String> it = optionalProps.keySet().iterator();
-		System.out.println( "Optional Properties..." );
+		Legislator legislator = mapper.readValue( jsonEvent, Legislator.class );
+		System.out.println( "\n\n" + legislator );
+		Map<String, List<Role>> oldRoles = legislator.oldRoles;
+		Iterator<String> it = oldRoles.keySet().iterator();
+		System.out.println( "Old Roles..." );
 		while( it.hasNext() ) {
 			String key = it.next();
-			System.out.println( "   --> " + key + ":" + optionalProps.get(key) );
+			System.out.println( "   --> " + key + ":" + oldRoles.get(key) );
 		}
 	}
 	
