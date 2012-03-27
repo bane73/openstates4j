@@ -7,10 +7,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -61,6 +59,54 @@ public class District extends Base {
 				.append( "]" );
 			
 			return sb.toString();
+		}
+	}
+	
+	
+	/**
+	 * Boundary
+	 * 
+	 * @author Brandon Gresham <brandon@thegreshams.net>	
+	 */
+	public static class Boundary extends Base {
+		
+		private static final long serialVersionUID = 1L;
+		
+		public 		@JsonProperty( "name" )						String				name;
+		public		@JsonProperty( "chamber" )					String				chamber;
+		public		@JsonProperty( "abbr" ) 					String				abbr;
+		public		@JsonProperty( "boundary_id" )				String				boundaryId;
+		public		@JsonProperty( "num_seats" )				int					numSeats;
+		public		@JsonProperty( "region" )					Region				region;
+		public		@JsonProperty( "shape" )					String[][][][]		shape;
+		
+		
+		/**
+		 * Region
+		 * 
+		 * @author Brandon Gresham <brandon@thegreshams.net>
+		 */
+		public static class Region extends Base {
+			
+			private static final long serialVersionUID = 1L;
+			
+			public		@JsonProperty( "lon_delta" )				String				lonDelta;
+			public		@JsonProperty( "center_lon" )				String				lonCenter;
+			public		@JsonProperty( "lat_delta" )				String				latDelta;
+			public		@JsonProperty( "center_lat" )				String				latCenter;
+		}
+		
+		
+		/**
+		 * Shape
+		 * 
+		 * @author Brandon Gresham <brandon@thegreshams.net>
+		 */
+		public static class Shape extends Base {
+			
+			private static final long serialVersionUID = 1L;
+			
+			
 		}
 	}
 	
@@ -139,6 +185,34 @@ public class District extends Base {
 		System.out.println( "Found " + districts.size() + " districts in Utah's lower-house" );
 		districts = District.find( "ut", "upper", openStates_apiKey );
 		System.out.println( "Found " + districts.size() + " districts in Utah's upper-house" );
+		
+		// get one of the boundaries
+		District targetDistrict = districts.get(0);
+		String boundaryId = targetDistrict.boundaryId;
+
+		// build the URL
+		StringBuilder query = new StringBuilder( "http://openstates.org/api/v1/districts/boundary/" + boundaryId + "/" );
+		query.append( "?apikey=" + openStates_apiKey );
+		URL url = new URL( query.toString() );
+		
+		// fetch the data
+		InputStream is = url.openStream();
+		Writer writer = new StringWriter();
+		char[] buffer = new char[1024];
+		Reader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
+		int n;
+		while( (n=reader.read(buffer)) != -1 ) {
+			writer.write(buffer, 0, n);
+		}
+		is.close();
+		String jsonResponse = writer.toString();
+		
+		// map to result
+		ObjectMapper mapper = new ObjectMapper();
+		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+		mapper.setDateFormat( sdf );
+		Boundary result = mapper.readValue( jsonResponse, Boundary.class );
+		System.out.println( "Boundary has " + result.numSeats + " seats" );
 		
 	}
 

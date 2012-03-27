@@ -12,9 +12,9 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 import net.thegreshams.openstates4j.model.District;
+import net.thegreshams.openstates4j.model.District.Boundary;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
@@ -69,6 +69,9 @@ public class OpenStates {
 		return jsonResponse;
 	}
 	
+	public List<District> findDistricts( String stateAbbr ) throws OpenStatesException {
+		return this.findDistricts( stateAbbr, null );
+	}
 	public List<District> findDistricts( String stateAbbr, String chamber ) throws OpenStatesException {
 		
 		LOGGER.debug( "finding districts for state(" + stateAbbr + ") and chamber(" + chamber + ")" );
@@ -105,6 +108,37 @@ public class OpenStates {
 		return result;
 	}
 	
+	public Boundary getBoundary( District district ) throws OpenStatesException {
+		return this.getBoundary( district.boundaryId );
+	}
+	public Boundary getBoundary( String boundaryId ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting boundary for boundary-id(" + boundaryId + ")" );
+		
+		StringBuilder urlQuerySb = new StringBuilder( baseUrl + "districts/boundary/" + boundaryId + "/" );
+		urlQuerySb.append( "?apikey=" + apiKey );
+		
+		String jsonResponse = this.getJsonResponse( urlQuerySb.toString() );
+		LOGGER.debug( "received json-response: " + jsonResponse );
+
+		ObjectMapper mapper = new ObjectMapper();
+		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+		mapper.setDateFormat( sdf );
+		
+		Boundary result = null;
+		try {
+			
+			result = mapper.readValue( jsonResponse, Boundary.class );
+			
+		} catch( Throwable t ) {
+			
+			throw new OpenStatesException( "unable to map json to " + Boundary.class.getCanonicalName(), t );
+			
+		}
+		
+		return result;
+	}
+	
 	public static void main( String[] args ) {
 
 		// get the API key
@@ -122,7 +156,7 @@ public class OpenStates {
 		
 		OpenStates os = new OpenStates( apiKey );
 		try {
-			List<District> allUtahDistricts = os.findDistricts( "ut", null );
+			List<District> allUtahDistricts = os.findDistricts( "ut" );
 			List<District> utahLowerDistricts = os.findDistricts( "ut", "lower" );
 			List<District> utahUpperDistricts = os.findDistricts( "ut", "upper" );
 			
@@ -130,6 +164,9 @@ public class OpenStates {
 			System.out.println( "Utah's lower house has " + utahLowerDistricts.size() + " districts" );
 			System.out.println( "Utah's upper house has " + utahUpperDistricts.size() + " districts" );
 			System.out.println( "Utah's has " + allUtahDistricts.size() + " total districts" );
+			
+			Boundary boundary = os.getBoundary( utahUpperDistricts.get(5) );
+			System.out.println( "Utah's " + boundary.chamber + " district " + boundary.name + " has " + boundary.numSeats + " seat(s) (" + boundary.boundaryId + ")" );
 			
 		} catch( OpenStatesException e ) {
 			e.printStackTrace();
