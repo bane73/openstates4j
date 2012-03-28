@@ -19,6 +19,8 @@ import net.thegreshams.openstates4j.model.District;
 import net.thegreshams.openstates4j.model.District.Boundary;
 
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
@@ -196,14 +198,39 @@ public class OpenStates {
 		return result;
 	}
 	
-	public Committee getCommittee( String committeeId ) {
+	public Committee getCommittee( String committeeId ) throws OpenStatesException {
 		
-		// TODO
+		LOGGER.debug( "getting committee for committee-id(" + committeeId + ")" );
 		
-		return null;
+		StringBuilder urlQuerySb = new StringBuilder( baseUrl + "committees/" + committeeId + "/?apikey=" + apiKey );
+		String jsonResponse = this.getJsonResponse( urlQuerySb.toString() );
+		LOGGER.debug( "received json-response: " + jsonResponse );
+
+		ObjectMapper mapper = new ObjectMapper();
+		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+		mapper.setDateFormat( sdf );
+		
+		Committee result = null;
+		try {
+			
+			result = mapper.readValue( jsonResponse, Committee.class );
+			
+		} catch ( Throwable t ) {
+
+			throw new OpenStatesException( "unable to map json to " + Committee.class.getCanonicalName(), t );
+			
+		} 
+
+		
+		LOGGER.debug( ( result == null ?
+										"json-response mapped to NULL of type " + Committee.class.getSimpleName()
+										:
+										"json-response mapped to type " + Committee.class.getSimpleName() + "(" + result.id + ")" ) );
+		
+		return result;
 	}
 	
-	public static void main( String[] args ) {
+	public static void main( String[] args ) throws OpenStatesException {
 
 		// get the API key
 		String apiKey = null;
@@ -219,34 +246,35 @@ public class OpenStates {
 		}
 		
 		OpenStates os = new OpenStates( apiKey );
-		try {
 			
-			System.out.println( "*** DISTRICTS ***\n" );
-			List<District> allUtahDistricts = os.findDistricts( "ut" );
-			List<District> utahLowerDistricts = os.findDistricts( "ut", "lower" );
-			List<District> utahUpperDistricts = os.findDistricts( "ut", "upper" );
+		System.out.println( "*** DISTRICTS ***\n" );
+		List<District> allUtahDistricts = os.findDistricts( "ut" );
+		List<District> utahLowerDistricts = os.findDistricts( "ut", "lower" );
+		List<District> utahUpperDistricts = os.findDistricts( "ut", "upper" );
+		
+		
+		System.out.println( "Utah's lower house has " + utahLowerDistricts.size() + " districts" );
+		System.out.println( "Utah's upper house has " + utahUpperDistricts.size() + " districts" );
+		System.out.println( "Utah's has " + allUtahDistricts.size() + " total districts" );
+		
+		Boundary boundary = os.getBoundary( utahUpperDistricts.get(5) );
+		System.out.println( "Utah's " + boundary.chamber + " district " + boundary.name + " has " + boundary.numSeats + " seat(s) (" + boundary.boundaryId + ")" );
+		
+		System.out.println( "\n*** COMMITTEES ***\n" );
+		Map<String, String> queryParams = new HashMap<String, String>();
+		queryParams.put( "state", "ut" );
+		List<Committee> committees = os.findCommittees( queryParams );
+		System.out.println( "Utah has " + committees.size() + " committees" );
+		System.out.println( "One of Utah's committees is: " + committees.get(0).committee );
+		queryParams.put( "chamber", "upper" );
+		committees = os.findCommittees( queryParams );
+		System.out.println( "Utah's upper house has " + committees.size() + " committees" );
+		
+		String targetCommitteeId = committees.get(0).id;
+		System.out.println( "\nGetting committe: " + targetCommitteeId );
+		Committee targetCommittee = os.getCommittee( targetCommitteeId );
+		System.out.println( "Found committee... " + targetCommittee.committee );
 			
-			
-			System.out.println( "Utah's lower house has " + utahLowerDistricts.size() + " districts" );
-			System.out.println( "Utah's upper house has " + utahUpperDistricts.size() + " districts" );
-			System.out.println( "Utah's has " + allUtahDistricts.size() + " total districts" );
-			
-			Boundary boundary = os.getBoundary( utahUpperDistricts.get(5) );
-			System.out.println( "Utah's " + boundary.chamber + " district " + boundary.name + " has " + boundary.numSeats + " seat(s) (" + boundary.boundaryId + ")" );
-			
-			System.out.println( "\n*** COMMITTEES ***\n" );
-			Map<String, String> queryParams = new HashMap<String, String>();
-			queryParams.put( "state", "ut" );
-			List<Committee> committees = os.findCommittees( queryParams );
-			System.out.println( "Utah has " + committees.size() + " committees" );
-			System.out.println( "One of Utah's committees is: " + committees.get(0).committee );
-			queryParams.put( "chamber", "upper" );
-			committees = os.findCommittees( queryParams );
-			System.out.println( "Utah's upper house has " + committees.size() + " committees" );
-			
-		} catch( OpenStatesException e ) {
-			e.printStackTrace();
-		}
 	}
 	
 }
