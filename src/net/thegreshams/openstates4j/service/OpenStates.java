@@ -9,6 +9,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -32,9 +33,16 @@ public class OpenStates {
 	private final String baseUrl = "http://openstates.org/api/v1/";
 	private final String apiKey;
 	
+
+	private final ObjectMapper mapper;
+	
 	public OpenStates( String apiKey ) {
 		
 		this.apiKey = apiKey;
+		
+		this.mapper = new ObjectMapper();
+		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+		this.mapper.setDateFormat( sdf );
 	}
 	
 	private String getJsonResponse( String urlQuery ) throws OpenStatesException {
@@ -71,9 +79,77 @@ public class OpenStates {
 			}
 			
 		}
+
+		LOGGER.debug( "received json-response: " + jsonResponse );
 		
 		return jsonResponse;
 	}
+	
+	private String getUrlQueryString( String queryPath ) {
+		return this.getUrlQueryString( queryPath, null );
+	}
+	private String getUrlQueryString( String queryPath, Map<String, String> queryParameters ) {
+		
+		StringBuilder sb = new StringBuilder( baseUrl );
+		
+		sb.append( queryPath + "/" );
+		sb.append( "?apikey=" + this.apiKey );
+		
+		if( queryParameters != null ) {
+			Iterator<String> it = queryParameters.keySet().iterator();
+			while( it.hasNext() ) {
+				String key = it.next();
+				String value = queryParameters.get(key);
+				sb.append( "&" + key + "=" + value );
+			}
+		}
+		
+		return sb.toString();
+	}
+	
+	private <T> T mapObject( String json, Class<T> valueType ) throws JsonParseException, JsonMappingException, IOException {
+		
+		T result = this.mapper.readValue( json, valueType );
+		
+		//log
+		StringBuilder sbLogMsg = new StringBuilder( "json mapped to " );
+		if( result == null ) {
+			sbLogMsg.append( "NULL" );
+		}
+		else {
+			sbLogMsg.append( "type " + valueType.getCanonicalName() );
+		}
+		LOGGER.debug( sbLogMsg.toString() );
+		
+		return result;
+	}
+	
+	private <T> T mapObject( String json, TypeReference<?> valueTypeRef ) throws JsonParseException, JsonMappingException, IOException {
+
+		T result = this.mapper.readValue( json, valueTypeRef );
+		
+		// log
+		StringBuilder sbLogMsg = new StringBuilder( "json mapped to " );		
+		if( result == null ) {
+			sbLogMsg.append( "NULL" );
+		}
+		else if( result instanceof Collection ) {
+			int size = ((Collection<?>) result).size();
+			sbLogMsg.append( "type " + valueTypeRef.getType() + " with " + size + " elements" );
+		} 
+		else {
+			sbLogMsg.append( "type " + valueTypeRef.getType() );
+		}		
+		LOGGER.debug( sbLogMsg.toString() );
+		
+		return result;
+	}
+
+	
+	
+/////////////////////////////////////////////////
+	
+	
 	
 	public List<District> findDistricts( String stateAbbr ) throws OpenStatesException {
 		return this.findDistricts( stateAbbr, null );
@@ -82,35 +158,24 @@ public class OpenStates {
 		
 		LOGGER.debug( "finding districts for state(" + stateAbbr + ") and chamber(" + chamber + ")" );
 		
-		StringBuilder urlQuerySb = new StringBuilder( baseUrl + "districts/" + stateAbbr + "/" );
+		StringBuilder sbQueryPath = new StringBuilder( "districts/" + stateAbbr );
 		if( chamber != null ) {
-			urlQuerySb.append( chamber + "/" );
+			sbQueryPath.append( "/" + chamber );
 		}
-		urlQuerySb.append( "?apikey=" + apiKey );
+		String urlQueryString = getUrlQueryString( sbQueryPath.toString() );
 		
-		String jsonResponse = this.getJsonResponse( urlQuerySb.toString() );
-		LOGGER.debug( "received json-response: " + jsonResponse );
-		
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		mapper.setDateFormat( sdf );
-		
+		String jsonResponse = this.getJsonResponse( urlQueryString );
+				
 		List<District> result = null;
 		try {
 			
-			result = mapper.readValue( jsonResponse, new TypeReference<List<District>>(){} );
+			result = this.mapObject( jsonResponse, new TypeReference<List<District>>(){} );
 			
 		} catch( Throwable t ) {
 			
 			throw new OpenStatesException( "unable to map json to " + District.class.getCanonicalName(), t );
 			
 		}
-		
-		LOGGER.debug( (result == null ?
-										"json-response mapped to a NULL List<" + District.class.getSimpleName() + ">"
-										:
-										"json-response mapped to a List<" + District.class.getSimpleName() + "> with " 
-											+ result.size() + " elements" ) );
 		
 		return result;
 	}
@@ -122,31 +187,21 @@ public class OpenStates {
 		
 		LOGGER.debug( "getting boundary for boundary-id(" + boundaryId + ")" );
 		
-		StringBuilder urlQuerySb = new StringBuilder( baseUrl + "districts/boundary/" + boundaryId + "/" );
-		urlQuerySb.append( "?apikey=" + apiKey );
+		StringBuilder sbQueryPath = new StringBuilder( "districts/boundary/" + boundaryId );
+		String urlQueryString = getUrlQueryString( sbQueryPath.toString() );
 		
-		String jsonResponse = this.getJsonResponse( urlQuerySb.toString() );
-		LOGGER.debug( "received json-response: " + jsonResponse );
-
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		mapper.setDateFormat( sdf );
+		String jsonResponse = this.getJsonResponse( urlQueryString );
 		
 		Boundary result = null;
 		try {
 			
-			result = mapper.readValue( jsonResponse, Boundary.class );
+			result = this.mapObject( jsonResponse, Boundary.class );
 			
 		} catch( Throwable t ) {
 			
 			throw new OpenStatesException( "unable to map json to " + Boundary.class.getCanonicalName(), t );
 			
 		}
-		
-		LOGGER.debug( ( result == null ?
-										"json-response mapped to NULL of type " + Boundary.class.getSimpleName()
-										:
-										"json-response mapped to type " + Boundary.class.getSimpleName() + "(" + result.boundaryId + ")" ) );
 		
 		return result;
 	}
@@ -155,45 +210,22 @@ public class OpenStates {
 		
 		LOGGER.debug( "getting committees using query-parameters: " + queryParameters );
 		
-		StringBuilder urlQuerySb = new StringBuilder( baseUrl + "committees/?" );
-		if( queryParameters != null ) {
-			Iterator<String> it = queryParameters.keySet().iterator();
-			while( it.hasNext() ) {
-				String key = it.next();
-				String value = queryParameters.get(key);
-				if( key != null && !key.trim().isEmpty() 
-					&& value != null && !value.trim().isEmpty() )
-				{
-					urlQuerySb.append( key.trim() + "=" + value.trim() );
-				}
-				urlQuerySb.append( "&" );
-			}
-		}
-		urlQuerySb.append( "apikey=" + apiKey );
 		
-		String jsonResponse = this.getJsonResponse( urlQuerySb.toString() );
-		LOGGER.debug( "received json-response: " + jsonResponse );
+		StringBuilder sbQueryPath = new StringBuilder( "committees" );
+		String urlQueryString = getUrlQueryString( sbQueryPath.toString(), queryParameters );
 		
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		mapper.setDateFormat( sdf );
+		String jsonResponse = this.getJsonResponse( urlQueryString );
 		
 		List<Committee> result = null;
 		try {
 			
-			result = mapper.readValue( jsonResponse, new TypeReference<List<Committee>>(){} );
+			result = this.mapObject( jsonResponse, new TypeReference<List<Committee>>(){} );
 			
 		} catch( Throwable t ) {
 			
 			throw new OpenStatesException( "unable to map json to " + Committee.class.getCanonicalName(), t );
 			
 		}
-		
-		LOGGER.debug( (result == null ?
-										"json-response mapped to a NULL List<" + Committee.class.getSimpleName() + ">"
-										:
-										"json-response mapped to a List<" + Committee.class.getSimpleName() + "> with " 
-											+ result.size() + " elements" ) );
 		
 		return result;
 	}
@@ -202,18 +234,15 @@ public class OpenStates {
 		
 		LOGGER.debug( "getting committee for committee-id(" + committeeId + ")" );
 		
-		StringBuilder urlQuerySb = new StringBuilder( baseUrl + "committees/" + committeeId + "/?apikey=" + apiKey );
-		String jsonResponse = this.getJsonResponse( urlQuerySb.toString() );
-		LOGGER.debug( "received json-response: " + jsonResponse );
+		StringBuilder sbQueryPath = new StringBuilder( "committees/" + committeeId );
+		String urlQueryString = getUrlQueryString( sbQueryPath.toString() );
 
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		mapper.setDateFormat( sdf );
+		String jsonResponse = this.getJsonResponse( urlQueryString );
 		
 		Committee result = null;
 		try {
 			
-			result = mapper.readValue( jsonResponse, Committee.class );
+			result = this.mapObject( jsonResponse, Committee.class );
 			
 		} catch ( Throwable t ) {
 
@@ -221,12 +250,6 @@ public class OpenStates {
 			
 		} 
 
-		
-		LOGGER.debug( ( result == null ?
-										"json-response mapped to NULL of type " + Committee.class.getSimpleName()
-										:
-										"json-response mapped to type " + Committee.class.getSimpleName() + "(" + result.id + ")" ) );
-		
 		return result;
 	}
 	
@@ -255,7 +278,7 @@ public class OpenStates {
 		
 		System.out.println( "Utah's lower house has " + utahLowerDistricts.size() + " districts" );
 		System.out.println( "Utah's upper house has " + utahUpperDistricts.size() + " districts" );
-		System.out.println( "Utah's has " + allUtahDistricts.size() + " total districts" );
+		System.out.println( "Utah has " + allUtahDistricts.size() + " total districts" );
 		
 		Boundary boundary = os.getBoundary( utahUpperDistricts.get(5) );
 		System.out.println( "Utah's " + boundary.chamber + " district " + boundary.name + " has " + boundary.numSeats + " seat(s) (" + boundary.boundaryId + ")" );
