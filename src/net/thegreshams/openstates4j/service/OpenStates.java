@@ -69,8 +69,21 @@ public class OpenStates {
 		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Bill>>(){} );
 	}
 	
-	public List<Bill> getBill( String stateAbbr, String session, String chamber, String billId ) throws OpenStatesException {
-		return null;
+	public Bill getBill( String stateAbbr, String session, String billId ) throws OpenStatesException {
+		return this.getBill( stateAbbr, session, billId, null );
+	}
+	public Bill getBill( String stateAbbr, String session, String billId, String chamber ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting bill for bill-id(" + billId + "), state(" + stateAbbr + "), session(" + session + ")" +
+						( chamber == null ? "" : (", chamber(" + chamber + ")") ) );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "bills/" + stateAbbr + "/" + session + "/" );
+		if( chamber != null ) {
+			sbQueryPath.append( chamber + "/" );
+		}
+		sbQueryPath.append( billId );
+		
+		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), Bill.class );
 	}
 	
 	/////////////
@@ -392,6 +405,11 @@ public class OpenStates {
 		List<Bill> bills = os.findBills( queryParams );
 		System.out.println( "Utah's upper-house has " + bills.size() + " bills that have been updated in 2012" );
 		System.out.println( "One of Utah's 2012 upper-house bills is: " + bills.get(0).title );
+		
+		Bill bill = bills.get(0);
+		System.out.println( "\nGetting bill: " + bill.id );
+		Bill targetBill = os.getBill( bill.state, bill.session, bill.id );
+		System.out.println( "Found bill... " + targetBill.title );
 	}
 	
 }
