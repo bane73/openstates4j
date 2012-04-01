@@ -36,6 +36,15 @@ public class OpenStates {
 
 	private final ObjectMapper mapper;
 	
+	
+	
+///////////////////////////////////////////////////////////////////////////////
+//
+// API
+//
+///////////////////////////////////////////////////////////////////////////////
+	
+	
 	public OpenStates( String apiKey ) {
 		
 		this.apiKey = apiKey;
@@ -44,6 +53,93 @@ public class OpenStates {
 		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
 		this.mapper.setDateFormat( sdf );
 	}
+
+	////////////
+	//
+	// DISTRICTS
+	//
+	////////////
+
+	public List<District> findDistricts( String stateAbbr ) throws OpenStatesException {
+		return this.findDistricts( stateAbbr, null );
+	}
+	public List<District> findDistricts( String stateAbbr, String chamber ) throws OpenStatesException {
+		
+		LOGGER.debug( "finding districts for state(" + stateAbbr + ") and chamber(" + chamber + ")" );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "districts/" + stateAbbr );
+		if( chamber != null ) {
+			sbQueryPath.append( "/" + chamber );
+		}
+		String urlQueryString = getUrlQueryString( sbQueryPath.toString() );
+		
+		String jsonResponse = this.getJsonResponse( urlQueryString );
+				
+		List<District> result = this.mapObject( jsonResponse, new TypeReference<List<District>>(){} );
+		
+		return result;
+	}
+	
+	public Boundary getBoundary( District district ) throws OpenStatesException {
+		return this.getBoundary( district.boundaryId );
+	}
+	public Boundary getBoundary( String boundaryId ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting boundary for boundary-id(" + boundaryId + ")" );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "districts/boundary/" + boundaryId );
+		String urlQueryString = getUrlQueryString( sbQueryPath.toString() );
+		
+		String jsonResponse = this.getJsonResponse( urlQueryString );
+		
+		Boundary result = this.mapObject( jsonResponse, Boundary.class );
+		
+		return result;
+	}
+
+	/////////////
+	//
+	// COMMITTEES
+	//
+	/////////////
+	
+	public List<Committee> findCommittees( Map<String, String> queryParameters ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting committees using query-parameters: " + queryParameters );
+		
+		
+		StringBuilder sbQueryPath = new StringBuilder( "committees" );
+		String urlQueryString = getUrlQueryString( sbQueryPath.toString(), queryParameters );
+		
+		String jsonResponse = this.getJsonResponse( urlQueryString );
+		
+		List<Committee> result = this.mapObject( jsonResponse, new TypeReference<List<Committee>>(){} );
+		
+		return result;
+	}
+	
+	public Committee getCommittee( String committeeId ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting committee for committee-id(" + committeeId + ")" );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "committees/" + committeeId );
+		String urlQueryString = getUrlQueryString( sbQueryPath.toString() );
+
+		String jsonResponse = this.getJsonResponse( urlQueryString );
+		
+		Committee result = this.mapObject( jsonResponse, Committee.class );
+
+		return result;
+	}
+	
+	
+	
+///////////////////////////////////////////////////////////////////////////////
+//
+// PRIVATE HELPERS
+//
+///////////////////////////////////////////////////////////////////////////////
+
 	
 	private String getJsonResponse( String urlQuery ) throws OpenStatesException {
 		
@@ -107,9 +203,23 @@ public class OpenStates {
 		return sb.toString();
 	}
 	
-	private <T> T mapObject( String json, Class<T> valueType ) throws JsonParseException, JsonMappingException, IOException {
+	private <T> T mapObject( String json, Class<T> valueType ) throws OpenStatesException {
 		
-		T result = this.mapper.readValue( json, valueType );
+		T result = null;
+		try {
+			
+			result = this.mapper.readValue( json, valueType );
+			
+		} catch( Throwable t ) {
+			
+			String msg = "error mapping to object-type(" +
+							valueType.getCanonicalName() +
+							") from json: " +
+							json;
+			LOGGER.warn( msg );
+			throw new OpenStatesException( msg, t );
+			
+		}
 		
 		//log
 		StringBuilder sbLogMsg = new StringBuilder( "json mapped to " );
@@ -124,9 +234,22 @@ public class OpenStates {
 		return result;
 	}
 	
-	private <T> T mapObject( String json, TypeReference<?> valueTypeRef ) throws JsonParseException, JsonMappingException, IOException {
+	private <T> T mapObject( String json, TypeReference<?> valueTypeRef ) throws OpenStatesException {
 
-		T result = this.mapper.readValue( json, valueTypeRef );
+		T result = null;
+		try {
+			
+			result = this.mapper.readValue( json, valueTypeRef );
+			
+		} catch( Throwable t ) {
+
+			String msg = "error mapping to object-type(" +
+							valueTypeRef.getType() +
+							") from json: " +
+							json;
+			LOGGER.warn( msg );
+			throw new OpenStatesException( msg, t );
+		}
 		
 		// log
 		StringBuilder sbLogMsg = new StringBuilder( "json mapped to " );		
@@ -147,111 +270,12 @@ public class OpenStates {
 
 	
 	
-/////////////////////////////////////////////////
-	
-	
-	
-	public List<District> findDistricts( String stateAbbr ) throws OpenStatesException {
-		return this.findDistricts( stateAbbr, null );
-	}
-	public List<District> findDistricts( String stateAbbr, String chamber ) throws OpenStatesException {
-		
-		LOGGER.debug( "finding districts for state(" + stateAbbr + ") and chamber(" + chamber + ")" );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "districts/" + stateAbbr );
-		if( chamber != null ) {
-			sbQueryPath.append( "/" + chamber );
-		}
-		String urlQueryString = getUrlQueryString( sbQueryPath.toString() );
-		
-		String jsonResponse = this.getJsonResponse( urlQueryString );
-				
-		List<District> result = null;
-		try {
-			
-			result = this.mapObject( jsonResponse, new TypeReference<List<District>>(){} );
-			
-		} catch( Throwable t ) {
-			
-			throw new OpenStatesException( "unable to map json to " + District.class.getCanonicalName(), t );
-			
-		}
-		
-		return result;
-	}
-	
-	public Boundary getBoundary( District district ) throws OpenStatesException {
-		return this.getBoundary( district.boundaryId );
-	}
-	public Boundary getBoundary( String boundaryId ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting boundary for boundary-id(" + boundaryId + ")" );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "districts/boundary/" + boundaryId );
-		String urlQueryString = getUrlQueryString( sbQueryPath.toString() );
-		
-		String jsonResponse = this.getJsonResponse( urlQueryString );
-		
-		Boundary result = null;
-		try {
-			
-			result = this.mapObject( jsonResponse, Boundary.class );
-			
-		} catch( Throwable t ) {
-			
-			throw new OpenStatesException( "unable to map json to " + Boundary.class.getCanonicalName(), t );
-			
-		}
-		
-		return result;
-	}
-	
-	public List<Committee> findCommittees( Map<String, String> queryParameters ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting committees using query-parameters: " + queryParameters );
-		
-		
-		StringBuilder sbQueryPath = new StringBuilder( "committees" );
-		String urlQueryString = getUrlQueryString( sbQueryPath.toString(), queryParameters );
-		
-		String jsonResponse = this.getJsonResponse( urlQueryString );
-		
-		List<Committee> result = null;
-		try {
-			
-			result = this.mapObject( jsonResponse, new TypeReference<List<Committee>>(){} );
-			
-		} catch( Throwable t ) {
-			
-			throw new OpenStatesException( "unable to map json to " + Committee.class.getCanonicalName(), t );
-			
-		}
-		
-		return result;
-	}
-	
-	public Committee getCommittee( String committeeId ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting committee for committee-id(" + committeeId + ")" );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "committees/" + committeeId );
-		String urlQueryString = getUrlQueryString( sbQueryPath.toString() );
+///////////////////////////////////////////////////////////////////////////////
+//
+// MAIN
+//
+///////////////////////////////////////////////////////////////////////////////
 
-		String jsonResponse = this.getJsonResponse( urlQueryString );
-		
-		Committee result = null;
-		try {
-			
-			result = this.mapObject( jsonResponse, Committee.class );
-			
-		} catch ( Throwable t ) {
-
-			throw new OpenStatesException( "unable to map json to " + Committee.class.getCanonicalName(), t );
-			
-		} 
-
-		return result;
-	}
 	
 	public static void main( String[] args ) throws OpenStatesException {
 
@@ -294,7 +318,7 @@ public class OpenStates {
 		System.out.println( "Utah's upper house has " + committees.size() + " committees" );
 		
 		String targetCommitteeId = committees.get(0).id;
-		System.out.println( "\nGetting committe: " + targetCommitteeId );
+		System.out.println( "\nGetting committee: " + targetCommitteeId );
 		Committee targetCommittee = os.getCommittee( targetCommitteeId );
 		System.out.println( "Found committee... " + targetCommittee.committee );
 			
