@@ -18,10 +18,9 @@ import java.util.Map;
 import net.thegreshams.openstates4j.model.Committee;
 import net.thegreshams.openstates4j.model.District;
 import net.thegreshams.openstates4j.model.District.Boundary;
+import net.thegreshams.openstates4j.model.Event;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
@@ -54,6 +53,54 @@ public class OpenStates {
 		this.mapper.setDateFormat( sdf );
 	}
 
+	/////////////
+	//
+	// COMMITTEES
+	//
+	/////////////
+	
+	public List<Committee> findCommittees( Map<String, String> queryParameters ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting committees using query-parameters: " + queryParameters );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "committees" );
+		
+		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Committee>>(){} );
+	}
+	
+	public Committee getCommittee( String committeeId ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting committee for committee-id(" + committeeId + ")" );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "committees/" + committeeId );
+		
+		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), Committee.class );
+	}
+
+	/////////////
+	//
+	// EVENTS
+	//
+	/////////////
+	
+	public List<Event> findEvents( Map<String, String> queryParameters ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting events using query-parameters: " + queryParameters );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "events" );
+		
+		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Event>>(){} );
+	}
+	
+	public Event getEvent( String eventId ) throws OpenStatesException {
+		
+		LOGGER.debug( "finding event for event-id(" + eventId + ")" );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "events/" + eventId );
+		
+		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), Event.class );
+	}
+
 	////////////
 	//
 	// DISTRICTS
@@ -84,30 +131,6 @@ public class OpenStates {
 		StringBuilder sbQueryPath = new StringBuilder( "districts/boundary/" + boundaryId );
 		
 		return this.queryForJsonAndBuildObject( sbQueryPath.toString(),  Boundary.class );
-	}
-
-	/////////////
-	//
-	// COMMITTEES
-	//
-	/////////////
-	
-	public List<Committee> findCommittees( Map<String, String> queryParameters ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting committees using query-parameters: " + queryParameters );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "committees" );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Committee>>(){} );
-	}
-	
-	public Committee getCommittee( String committeeId ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting committee for committee-id(" + committeeId + ")" );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "committees/" + committeeId );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), Committee.class );
 	}
 	
 	
@@ -329,6 +352,17 @@ public class OpenStates {
 		Committee targetCommittee = os.getCommittee( targetCommitteeId );
 		System.out.println( "Found committee... " + targetCommittee.committee );
 			
+		System.out.println( "\n*** EVENTS ***\n" );
+		queryParams = new HashMap<String, String>();
+		queryParams.put( "state", "tx" );
+		List<Event> events = os.findEvents( queryParams );
+		System.out.println( "Texas has " + events.size() + " events" );
+		System.out.println( "One of Texas's events is: " + events.get(0).description );
+		
+		String targetEventId = events.get(0).id;
+		System.out.println( "\nGetting event: " + targetEventId );
+		Event targetEvent = os.getEvent( targetEventId );
+		System.out.println( "Found event... " + targetEvent.description );
 	}
 	
 }
