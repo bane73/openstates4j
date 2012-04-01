@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.thegreshams.openstates4j.model.Bill;
 import net.thegreshams.openstates4j.model.Committee;
 import net.thegreshams.openstates4j.model.District;
 import net.thegreshams.openstates4j.model.District.Boundary;
@@ -53,6 +54,25 @@ public class OpenStates {
 		this.mapper.setDateFormat( sdf );
 	}
 
+	/////////////
+	//
+	// BILLS
+	//
+	/////////////
+
+	public List<Bill> findBills( Map<String, String> queryParameters ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting bills using query-parameters: " + queryParameters );
+	
+		StringBuilder sbQueryPath = new StringBuilder( "bills" );
+		
+		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Bill>>(){} );
+	}
+	
+	public List<Bill> getBill( String stateAbbr, String session, String chamber, String billId ) throws OpenStatesException {
+		return null;
+	}
+	
 	/////////////
 	//
 	// COMMITTEES
@@ -363,6 +383,15 @@ public class OpenStates {
 		System.out.println( "\nGetting event: " + targetEventId );
 		Event targetEvent = os.getEvent( targetEventId );
 		System.out.println( "Found event... " + targetEvent.description );
+		
+		System.out.println( "\n*** BILLS ***\n" );
+		queryParams = new HashMap<String, String>();
+		queryParams.put( "state", "ut" );
+		queryParams.put( "updated_since", "2012-01-01" );
+		queryParams.put( "chamber", "upper" );
+		List<Bill> bills = os.findBills( queryParams );
+		System.out.println( "Utah's upper-house has " + bills.size() + " bills that have been updated in 2012" );
+		System.out.println( "One of Utah's 2012 upper-house bills is: " + bills.get(0).title );
 	}
 	
 }
