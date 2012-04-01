@@ -1,0 +1,53 @@
+Note: THIS PROJECT IS STILL IN FLUX.
+
+
+REQUIREMENTS
+
+	In order to use this project, you must first acquire a Sunlight Labs API Key.
+	You can obtain a key by visiting http://services.sunlightlabs.com
+
+	You should also review the Open States API documentation, as this interface is
+	only meant to provide a thin wrapper it and should (hopefully) closely mirror it.
+	The API documentation can be found at http://openstates.org/api/
+
+
+KNOWN LIMITATIONS
+
+	Note that all of the Objects represented by the API are similarly represented
+	by this wrapper, with the exception of the State-Metadata object.
+
+
+EXAMPLE
+
+	OpenStates.setApiKey( {YOUR_SUNLIGHT_LABS_API_KEY} );
+	
+	// find all Districts for the state of California
+	List<District> allCaliforniaDistricts = District.find( "ca" );
+	
+	// find all Bills in New York's upper-house that have been updated since Jan. 1st, 2012
+	Map<String, String> queryParams = new HashMap<String, String>();
+	queryParams.put( "state", "ny" );
+	queryParams.put( "updated_since", "2012-01-01" );
+	queryParams.put( "chamber", "upper" );
+	List<Bill> allRecentBillsInNyUpperHouse = Bill.find( queryParams );
+
+	// find a specific Bill
+	Bill aBill = allRecentBillsInNyUpperHouse.get(0);
+	Bill targetBill = Bill.get( aBill.state, aBill.session, aBill.id );
+	
+	// finding Legislator's that represent a specific geo-area
+	List<Legislator> geoLegislators = Legislator.find( "-78.76648", "35.81336" );
+	
+	// accessing a Legislator's properties
+	String id = Legislator.id;
+	String fullName = Legislator.fullName;
+	String email = Legislator.email;
+	boolean isActive = Legislator.isActive;
+	
+
+HELP
+	Please submit usage-questions to: https://groups.google.com/forum/?fromgroups#!forum/fifty-state-project
+
+
+BUGS
+	Please submit all bugs to: https://github.com/bane73/openstates4j/issues
