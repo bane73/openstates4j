@@ -19,6 +19,7 @@ import net.thegreshams.openstates4j.model.Bill;
 import net.thegreshams.openstates4j.model.Committee;
 import net.thegreshams.openstates4j.model.District;
 import net.thegreshams.openstates4j.model.District.Boundary;
+import net.thegreshams.openstates4j.model.District.Legislator;
 import net.thegreshams.openstates4j.model.Event;
 
 import org.apache.log4j.Logger;
@@ -84,6 +85,21 @@ public class OpenStates {
 		sbQueryPath.append( billId );
 		
 		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), Bill.class );
+	}
+	
+	/////////////
+	//
+	// LEGISLATORS
+	//
+	/////////////
+	
+	public List<Legislator> findLegislators( Map<String, String> queryParameters ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting legislators using query-parameters: " + queryParameters );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "legislators" );
+		
+		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Legislator>>(){} );
 	}
 	
 	/////////////
@@ -410,6 +426,17 @@ public class OpenStates {
 		System.out.println( "\nGetting bill: " + bill.id );
 		Bill targetBill = os.getBill( bill.state, bill.session, bill.id );
 		System.out.println( "Found bill... " + targetBill.title );
+		
+		System.out.println( "\n*** LEGISLATORS ***\n" );
+		queryParams = new HashMap<String, String>();
+		queryParams.put( "state", "ut" );
+		List<Legislator> legislators = os.findLegislators( queryParams );
+		System.out.println( "Utah has " + legislators.size() + " legislators" );
+		queryParams.put( "party", "Republican" );
+		List<Legislator> repLegs = os.findLegislators( queryParams );
+		queryParams.put( "party", "Democratic" );
+		List<Legislator> demLegs = os.findLegislators( queryParams );
+		System.out.println( "Utah has " + repLegs.size() + " republican legislators and " + demLegs.size() + " democrat legislators");
 	}
 	
 }
