@@ -1,4 +1,4 @@
-Note: THIS PROJECT IS STILL IN FLUX.
+Note: THIS PROJECT IS STILL IN ALPHA.
 
 
 REQUIREMENTS
@@ -7,15 +7,16 @@ REQUIREMENTS
 	You can obtain a key by visiting http://services.sunlightlabs.com
 
 	You should also review the Open States API documentation, as this interface
-	is only meant to provide a thin wrapper it and should (hopefully) closely
-	mirror it.
+	is only meant to provide a thin wrapper around it and should (hopefully) 
+	closely mirror it.
 	The API documentation can be found at http://openstates.org/api/
 
 
 KNOWN LIMITATIONS
 
-	Note that all of the Objects represented by the API are similarly represented
-	by this wrapper, with the exception of the State-Metadata object.
+	Note that all of the Objects, methods, and parameters represented by the API 
+	are similarly represented by this wrapper, with the exception of the 
+	State-Metadata object.
 
 
 EXAMPLE
