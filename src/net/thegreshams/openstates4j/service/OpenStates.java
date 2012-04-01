@@ -102,6 +102,28 @@ public class OpenStates {
 		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Legislator>>(){} );
 	}
 	
+	public Legislator getLegislator( String legislatorId ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting legislator for legislator-id(" + legislatorId + ")" );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "legislators/" + legislatorId );
+		
+		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), Legislator.class );
+	}
+	
+	public List<Legislator> findLegislators( String longitude, String latitude ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting legislators using longitude(" + longitude + ") and latitude(" + latitude + ")" );
+
+		StringBuilder sbQueryPath = new StringBuilder( "legislators/geo" ); 
+		
+		Map<String, String> geoParams = new HashMap<String, String>();
+		geoParams.put( "long", longitude );
+		geoParams.put( "lat", latitude );
+		
+		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), geoParams, new TypeReference<List<Legislator>>(){} );
+	}
+	
 	/////////////
 	//
 	// COMMITTEES
@@ -437,6 +459,18 @@ public class OpenStates {
 		queryParams.put( "party", "Democratic" );
 		List<Legislator> demLegs = os.findLegislators( queryParams );
 		System.out.println( "Utah has " + repLegs.size() + " republican legislators and " + demLegs.size() + " democrat legislators");
+		
+		String targetLegislatorId = legislators.get(0).legislatorId;
+		System.out.println(  "\nGetting legislator: " + targetLegislatorId );
+		Legislator targetLegislator = os.getLegislator( targetLegislatorId );
+		System.out.println( "Found legislator... " + targetLegislator.fullName );
+		
+		String targetLong = "-78.76648";
+		String targetLat = "35.81336";
+		System.out.println( "Getting legislators in specific geo-area..." );
+		List<Legislator> geoLegislators = os.findLegislators( targetLong, targetLat );
+		System.out.println( "That geo-area has " + geoLegislators.size() + " legislators" );
+		System.out.println( "One of them is: " + geoLegislators.get(0).fullName );
 	}
 	
 }
