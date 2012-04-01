@@ -98,7 +98,7 @@ public class OpenStates {
 		
 		StringBuilder sbQueryPath = new StringBuilder( "committees" );
 		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), new TypeReference<List<Committee>>(){} );
+		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Committee>>(){} );
 	}
 	
 	public Committee getCommittee( String committeeId ) throws OpenStatesException {
@@ -257,14 +257,20 @@ public class OpenStates {
 	}
 	
 	private <T> T queryForJsonAndBuildObject( String queryPath, Class<T> valueType ) throws OpenStatesException {
+		return this.queryForJsonAndBuildObject( queryPath, null, valueType );
+	}
+	private <T> T queryForJsonAndBuildObject( String queryPath, TypeReference<?> valueTypeRef ) throws OpenStatesException {
+		return this.queryForJsonAndBuildObject( queryPath, null, valueTypeRef );
+	}
+	private <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, Class<T> valueType ) throws OpenStatesException {
 
-		String jsonResponse = this.buildUrlQueryStringAndGetJsonResponse( queryPath );
+		String jsonResponse = this.buildUrlQueryStringAndGetJsonResponse( queryPath, queryParams );
 		
 		return this.mapObject( jsonResponse, valueType );
 	}
-	private <T> T queryForJsonAndBuildObject( String queryPath, TypeReference<?> valueTypeRef ) throws OpenStatesException {
+	private <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, TypeReference<?> valueTypeRef ) throws OpenStatesException {
 
-		String jsonResponse = this.buildUrlQueryStringAndGetJsonResponse( queryPath );
+		String jsonResponse = this.buildUrlQueryStringAndGetJsonResponse( queryPath, queryParams );
 		
 		return this.mapObject( jsonResponse, valueTypeRef );
 	}

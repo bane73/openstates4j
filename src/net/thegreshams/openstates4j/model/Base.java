@@ -45,14 +45,14 @@ public abstract class Base implements Serializable {
 
 		// sanity-checks
 		if( key == null || key.trim().isEmpty() ) {
-			LOGGER.warn( "key was null/empty; discarding" );
+			LOGGER.debug( "key was null/empty; discarding" );
 			return;
 		}
 		key = key.trim();
 		
 		// sanity-checks
 		if( value == null ) {
-			LOGGER.warn( "value was null for key (" + key + "); discarding" );
+			LOGGER.debug( "value was null for key (" + key + "); discarding" );
 			return;
 		}
 		
@@ -60,14 +60,14 @@ public abstract class Base implements Serializable {
 		if( key.startsWith( "+" ) ) {	// OpenStates.org API states that optional-properties are prepended with '+'
 			key = key.replaceFirst( "\\+", "" );
 			if( key.trim().isEmpty() ) {
-				LOGGER.warn( "trimmed '+' from key but now it's empty; discarding" );
+				LOGGER.debug( "trimmed '+' from key but now it's empty; discarding" );
 				return;
 			}
 		}
 		
 		// double-check whether the key already exists or not
 		if( this.optionalProperties.containsKey( key ) ) {
-			LOGGER.warn( "replacing value in optional-properties for key (" + key + ")" );
+			LOGGER.debug( "replacing value in optional-properties for key (" + key + ")" );
 		}
 		
 		this.optionalProperties.put( key, value );
