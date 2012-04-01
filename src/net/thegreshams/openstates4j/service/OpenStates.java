@@ -31,199 +31,141 @@ public class OpenStates {
 	protected static final Logger LOGGER = Logger.getRootLogger();
 	
 
-	private final String baseUrl = "http://openstates.org/api/v1/";
-	private final String apiKey;
-	
-
-	private final ObjectMapper mapper;
-	
-	
-	
-///////////////////////////////////////////////////////////////////////////////
-//
-// API
-//
-///////////////////////////////////////////////////////////////////////////////
-	
-	
-	public OpenStates( String apiKey ) {
-		
-		this.apiKey = apiKey;
-		
-		this.mapper = new ObjectMapper();
+	private static final String BASE_URL = "http://openstates.org/api/v1/";
+	private static final ObjectMapper MAPPER;
+	static {
+		MAPPER = new ObjectMapper();
 		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		this.mapper.setDateFormat( sdf );
-	}
-
-	/////////////
-	//
-	// BILLS
-	//
-	/////////////
-
-	public List<Bill> findBills( Map<String, String> queryParameters ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting bills using query-parameters: " + queryParameters );
-	
-		StringBuilder sbQueryPath = new StringBuilder( "bills" );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Bill>>(){} );
+		MAPPER.setDateFormat( sdf );
 	}
 	
-	public Bill getBill( String stateAbbr, String session, String billId ) throws OpenStatesException {
-		return this.getBill( stateAbbr, session, billId, null );
-	}
-	public Bill getBill( String stateAbbr, String session, String billId, String chamber ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting bill for bill-id(" + billId + "), state(" + stateAbbr + "), session(" + session + ")" +
-						( chamber == null ? "" : (", chamber(" + chamber + ")") ) );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "bills/" + stateAbbr + "/" + session + "/" );
-		if( chamber != null ) {
-			sbQueryPath.append( chamber + "/" );
-		}
-		sbQueryPath.append( billId );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), Bill.class );
-	}
-	
-	/////////////
-	//
-	// LEGISLATORS
-	//
-	/////////////
-	
-	public List<Legislator> findLegislators( Map<String, String> queryParameters ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting legislators using query-parameters: " + queryParameters );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "legislators" );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Legislator>>(){} );
-	}
-	
-	public Legislator getLegislator( String legislatorId ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting legislator for legislator-id(" + legislatorId + ")" );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "legislators/" + legislatorId );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), Legislator.class );
-	}
-	
-	public List<Legislator> findLegislators( String longitude, String latitude ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting legislators using longitude(" + longitude + ") and latitude(" + latitude + ")" );
-
-		StringBuilder sbQueryPath = new StringBuilder( "legislators/geo" ); 
-		
-		Map<String, String> geoParams = new HashMap<String, String>();
-		geoParams.put( "long", longitude );
-		geoParams.put( "lat", latitude );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), geoParams, new TypeReference<List<Legislator>>(){} );
-	}
-	
-	/////////////
-	//
-	// COMMITTEES
-	//
-	/////////////
-	
-	public List<Committee> findCommittees( Map<String, String> queryParameters ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting committees using query-parameters: " + queryParameters );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "committees" );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Committee>>(){} );
-	}
-	
-	public Committee getCommittee( String committeeId ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting committee for committee-id(" + committeeId + ")" );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "committees/" + committeeId );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), Committee.class );
-	}
-
-	/////////////
-	//
-	// EVENTS
-	//
-	/////////////
-	
-	public List<Event> findEvents( Map<String, String> queryParameters ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting events using query-parameters: " + queryParameters );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "events" );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Event>>(){} );
-	}
-	
-	public Event getEvent( String eventId ) throws OpenStatesException {
-		
-		LOGGER.debug( "finding event for event-id(" + eventId + ")" );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "events/" + eventId );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), Event.class );
-	}
-
-	////////////
-	//
-	// DISTRICTS
-	//
-	////////////
-
-	public List<District> findDistricts( String stateAbbr ) throws OpenStatesException {
-		return this.findDistricts( stateAbbr, null );
-	}
-	public List<District> findDistricts( String stateAbbr, String chamber ) throws OpenStatesException {
-		
-		LOGGER.debug( "finding districts for state(" + stateAbbr + ") and chamber(" + chamber + ")" );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "districts/" + stateAbbr );
-		if( chamber != null ) {
-			sbQueryPath.append( "/" + chamber );
-		}
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(), new TypeReference<List<District>>(){} );
-	}
-	
-	public Boundary getBoundary( District district ) throws OpenStatesException {
-		return this.getBoundary( district.boundaryId );
-	}
-	public Boundary getBoundary( String boundaryId ) throws OpenStatesException {
-		
-		LOGGER.debug( "getting boundary for boundary-id(" + boundaryId + ")" );
-		
-		StringBuilder sbQueryPath = new StringBuilder( "districts/boundary/" + boundaryId );
-		
-		return this.queryForJsonAndBuildObject( sbQueryPath.toString(),  Boundary.class );
-	}
+	private OpenStates() { /* DO NOTHING */ }
 	
 	
 	
 ///////////////////////////////////////////////////////////////////////////////
 //
-// PRIVATE HELPERS
+// PUBLIC API
+//
+///////////////////////////////////////////////////////////////////////////////
+
+	
+	private static String apiKey;
+	public static void setApiKey( String apiKey ) throws OpenStatesException {
+		
+		if( apiKey == null || apiKey.trim().length() != 32 ) {
+			String msg = "apiKey cannot be null & must be 32-characters long; was: '" + apiKey + "'";
+			LOGGER.error( msg );
+			throw new OpenStatesException( msg );
+		}
+		OpenStates.apiKey = apiKey.trim();		
+	}
+
+	public static <T> T queryForJsonAndBuildObject( String queryPath, Class<T> valueType ) throws OpenStatesException {
+		return OpenStates.queryForJsonAndBuildObject( queryPath, null, valueType );
+	}
+	
+	public static <T> T queryForJsonAndBuildObject( String queryPath, TypeReference<?> valueTypeRef ) throws OpenStatesException {
+		return OpenStates.queryForJsonAndBuildObject( queryPath, null, valueTypeRef );
+	}
+	
+	public static <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, TypeReference<?> valueTypeRef ) throws OpenStatesException {
+
+		String jsonResponse = OpenStates.buildUrlQueryStringAndGetJsonResponse( queryPath, queryParams );
+		
+		return OpenStates.mapObject( jsonResponse, valueTypeRef );
+	}
+
+
+	
+///////////////////////////////////////////////////////////////////////////////
+//
+// PRIVATE API
 //
 ///////////////////////////////////////////////////////////////////////////////
 	
-	private String buildUrlQueryStringAndGetJsonResponse( String queryPath ) throws OpenStatesException {
-		return this.buildUrlQueryStringAndGetJsonResponse( queryPath, null );
-	}
-	private String buildUrlQueryStringAndGetJsonResponse( String queryPath, Map<String, String> queryParameters ) throws OpenStatesException {
 
-		String urlQueryString = this.buildUrlQueryString( queryPath, queryParameters );
-		String jsonResponse = this.getJsonResponse( urlQueryString );
+	private static <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, Class<T> valueType ) throws OpenStatesException {
+
+		String jsonResponse = OpenStates.buildUrlQueryStringAndGetJsonResponse( queryPath, queryParams );
+		
+		return OpenStates.mapObject( jsonResponse, valueType );
+	}
+	
+	private static String buildUrlQueryStringAndGetJsonResponse( String queryPath, Map<String, String> queryParameters ) throws OpenStatesException {
+
+		String urlQueryString = OpenStates.buildUrlQueryString( queryPath, queryParameters );
+		String jsonResponse = OpenStates.getJsonResponse( urlQueryString );
 		
 		return jsonResponse;
 	}
+
+	private static <T> T mapObject( String json, Class<T> valueType ) throws OpenStatesException {
+		
+		T result = null;
+		try {
+			
+			result = OpenStates.MAPPER.readValue( json, valueType );
+			
+		} catch( Throwable t ) {
+			
+			String msg = "error mapping to object-type(" +
+							valueType.getCanonicalName() +
+							") from json: " +
+							json;
+			LOGGER.warn( msg );
+			throw new OpenStatesException( msg, t );
+			
+		}
+		
+		//log
+		StringBuilder sbLogMsg = new StringBuilder( "json mapped to " );
+		if( result == null ) {
+			sbLogMsg.append( "NULL" );
+		}
+		else {
+			sbLogMsg.append( "type " + valueType.getCanonicalName() );
+		}
+		LOGGER.debug( sbLogMsg.toString() );
+		
+		return result;
+	}
 	
-	private String getJsonResponse( String urlQuery ) throws OpenStatesException {
+	private static <T> T mapObject( String json, TypeReference<?> valueTypeRef ) throws OpenStatesException {
+
+		T result = null;
+		try {
+			
+			result = OpenStates.MAPPER.readValue( json, valueTypeRef );
+			
+		} catch( Throwable t ) {
+
+			String msg = "error mapping to object-type(" +
+							valueTypeRef.getType() +
+							") from json: " +
+							json;
+			LOGGER.warn( msg );
+			throw new OpenStatesException( msg, t );
+		}
+		
+		// log
+		StringBuilder sbLogMsg = new StringBuilder( "json mapped to " );		
+		if( result == null ) {
+			sbLogMsg.append( "NULL" );
+		}
+		else if( result instanceof Collection ) {
+			int size = ((Collection<?>) result).size();
+			sbLogMsg.append( "type " + valueTypeRef.getType() + " with " + size + " elements" );
+		} 
+		else {
+			sbLogMsg.append( "type " + valueTypeRef.getType() );
+		}		
+		LOGGER.debug( sbLogMsg.toString() );
+		
+		return result;
+	}
+	
+	private static String getJsonResponse( String urlQuery ) throws OpenStatesException {
 		
 		LOGGER.debug( "getting json-response from url-query: " + urlQuery );
 		
@@ -263,15 +205,19 @@ public class OpenStates {
 		return jsonResponse;
 	}
 	
-	private String buildUrlQueryString( String queryPath ) {
-		return this.buildUrlQueryString( queryPath, null );
-	}
-	private String buildUrlQueryString( String queryPath, Map<String, String> queryParameters ) {
+	private static String buildUrlQueryString( String queryPath, Map<String, String> queryParameters ) throws OpenStatesException {
 		
-		StringBuilder sb = new StringBuilder( baseUrl );
+		if( OpenStates.apiKey == null ) {
+			String msg = "you must first set your api-key like this: OpenStates.setApiKey( {YOUR_API_KEY} );" +
+							" you can obtain a key by visiting: http://services.sunlightlabs.com/";
+			LOGGER.fatal( msg );
+			throw new OpenStatesException( msg );
+		}
+		
+		StringBuilder sb = new StringBuilder( OpenStates.BASE_URL );
 		
 		sb.append( queryPath + "/" );
-		sb.append( "?apikey=" + this.apiKey );
+		sb.append( "?apikey=" + OpenStates.apiKey );
 		
 		if( queryParameters != null ) {
 			Iterator<String> it = queryParameters.keySet().iterator();
@@ -283,194 +229,6 @@ public class OpenStates {
 		}
 		
 		return sb.toString();
-	}
-	
-	private <T> T mapObject( String json, Class<T> valueType ) throws OpenStatesException {
-		
-		T result = null;
-		try {
-			
-			result = this.mapper.readValue( json, valueType );
-			
-		} catch( Throwable t ) {
-			
-			String msg = "error mapping to object-type(" +
-							valueType.getCanonicalName() +
-							") from json: " +
-							json;
-			LOGGER.warn( msg );
-			throw new OpenStatesException( msg, t );
-			
-		}
-		
-		//log
-		StringBuilder sbLogMsg = new StringBuilder( "json mapped to " );
-		if( result == null ) {
-			sbLogMsg.append( "NULL" );
-		}
-		else {
-			sbLogMsg.append( "type " + valueType.getCanonicalName() );
-		}
-		LOGGER.debug( sbLogMsg.toString() );
-		
-		return result;
-	}
-	
-	private <T> T mapObject( String json, TypeReference<?> valueTypeRef ) throws OpenStatesException {
-
-		T result = null;
-		try {
-			
-			result = this.mapper.readValue( json, valueTypeRef );
-			
-		} catch( Throwable t ) {
-
-			String msg = "error mapping to object-type(" +
-							valueTypeRef.getType() +
-							") from json: " +
-							json;
-			LOGGER.warn( msg );
-			throw new OpenStatesException( msg, t );
-		}
-		
-		// log
-		StringBuilder sbLogMsg = new StringBuilder( "json mapped to " );		
-		if( result == null ) {
-			sbLogMsg.append( "NULL" );
-		}
-		else if( result instanceof Collection ) {
-			int size = ((Collection<?>) result).size();
-			sbLogMsg.append( "type " + valueTypeRef.getType() + " with " + size + " elements" );
-		} 
-		else {
-			sbLogMsg.append( "type " + valueTypeRef.getType() );
-		}		
-		LOGGER.debug( sbLogMsg.toString() );
-		
-		return result;
-	}
-	
-	private <T> T queryForJsonAndBuildObject( String queryPath, Class<T> valueType ) throws OpenStatesException {
-		return this.queryForJsonAndBuildObject( queryPath, null, valueType );
-	}
-	private <T> T queryForJsonAndBuildObject( String queryPath, TypeReference<?> valueTypeRef ) throws OpenStatesException {
-		return this.queryForJsonAndBuildObject( queryPath, null, valueTypeRef );
-	}
-	private <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, Class<T> valueType ) throws OpenStatesException {
-
-		String jsonResponse = this.buildUrlQueryStringAndGetJsonResponse( queryPath, queryParams );
-		
-		return this.mapObject( jsonResponse, valueType );
-	}
-	private <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, TypeReference<?> valueTypeRef ) throws OpenStatesException {
-
-		String jsonResponse = this.buildUrlQueryStringAndGetJsonResponse( queryPath, queryParams );
-		
-		return this.mapObject( jsonResponse, valueTypeRef );
-	}
-
-	
-	
-///////////////////////////////////////////////////////////////////////////////
-//
-// MAIN
-//
-///////////////////////////////////////////////////////////////////////////////
-
-	
-	public static void main( String[] args ) throws OpenStatesException {
-
-		// get the API key
-		String apiKey = null;
-		for( String s : args ) {
-
-			if( s == null || s.trim().isEmpty() ) continue;
-			if( s.trim().split( "=" )[0].equals( "apiKey" ) ) {
-				apiKey = s.trim().split( "=" )[1];
-			}
-		}
-		if( apiKey == null || apiKey.trim().isEmpty() ) {
-			throw new IllegalArgumentException( "Program-argument 'apiKey' not found but required" );
-		}
-		
-		OpenStates os = new OpenStates( apiKey );
-			
-		System.out.println( "*** DISTRICTS ***\n" );
-		List<District> allUtahDistricts = os.findDistricts( "ut" );
-		List<District> utahLowerDistricts = os.findDistricts( "ut", "lower" );
-		List<District> utahUpperDistricts = os.findDistricts( "ut", "upper" );
-		
-		
-		System.out.println( "Utah's lower house has " + utahLowerDistricts.size() + " districts" );
-		System.out.println( "Utah's upper house has " + utahUpperDistricts.size() + " districts" );
-		System.out.println( "Utah has " + allUtahDistricts.size() + " total districts" );
-		
-		Boundary boundary = os.getBoundary( utahUpperDistricts.get(5) );
-		System.out.println( "Utah's " + boundary.chamber + " district " + boundary.name + " has " + boundary.numSeats + " seat(s) (" + boundary.boundaryId + ")" );
-		
-		System.out.println( "\n*** COMMITTEES ***\n" );
-		Map<String, String> queryParams = new HashMap<String, String>();
-		queryParams.put( "state", "ut" );
-		List<Committee> committees = os.findCommittees( queryParams );
-		System.out.println( "Utah has " + committees.size() + " committees" );
-		System.out.println( "One of Utah's committees is: " + committees.get(0).committee );
-		queryParams.put( "chamber", "upper" );
-		committees = os.findCommittees( queryParams );
-		System.out.println( "Utah's upper house has " + committees.size() + " committees" );
-		
-		String targetCommitteeId = committees.get(0).id;
-		System.out.println( "\nGetting committee: " + targetCommitteeId );
-		Committee targetCommittee = os.getCommittee( targetCommitteeId );
-		System.out.println( "Found committee... " + targetCommittee.committee );
-			
-		System.out.println( "\n*** EVENTS ***\n" );
-		queryParams = new HashMap<String, String>();
-		queryParams.put( "state", "tx" );
-		List<Event> events = os.findEvents( queryParams );
-		System.out.println( "Texas has " + events.size() + " events" );
-		System.out.println( "One of Texas's events is: " + events.get(0).description );
-		
-		String targetEventId = events.get(0).id;
-		System.out.println( "\nGetting event: " + targetEventId );
-		Event targetEvent = os.getEvent( targetEventId );
-		System.out.println( "Found event... " + targetEvent.description );
-		
-		System.out.println( "\n*** BILLS ***\n" );
-		queryParams = new HashMap<String, String>();
-		queryParams.put( "state", "ut" );
-		queryParams.put( "updated_since", "2012-01-01" );
-		queryParams.put( "chamber", "upper" );
-		List<Bill> bills = os.findBills( queryParams );
-		System.out.println( "Utah's upper-house has " + bills.size() + " bills that have been updated in 2012" );
-		System.out.println( "One of Utah's 2012 upper-house bills is: " + bills.get(0).title );
-		
-		Bill bill = bills.get(0);
-		System.out.println( "\nGetting bill: " + bill.id );
-		Bill targetBill = os.getBill( bill.state, bill.session, bill.id );
-		System.out.println( "Found bill... " + targetBill.title );
-		
-		System.out.println( "\n*** LEGISLATORS ***\n" );
-		queryParams = new HashMap<String, String>();
-		queryParams.put( "state", "ut" );
-		List<Legislator> legislators = os.findLegislators( queryParams );
-		System.out.println( "Utah has " + legislators.size() + " legislators" );
-		queryParams.put( "party", "Republican" );
-		List<Legislator> repLegs = os.findLegislators( queryParams );
-		queryParams.put( "party", "Democratic" );
-		List<Legislator> demLegs = os.findLegislators( queryParams );
-		System.out.println( "Utah has " + repLegs.size() + " republican legislators and " + demLegs.size() + " democrat legislators");
-		
-		String targetLegislatorId = legislators.get(0).legislatorId;
-		System.out.println(  "\nGetting legislator: " + targetLegislatorId );
-		Legislator targetLegislator = os.getLegislator( targetLegislatorId );
-		System.out.println( "Found legislator... " + targetLegislator.fullName );
-		
-		String targetLong = "-78.76648";
-		String targetLat = "35.81336";
-		System.out.println( "Getting legislators in specific geo-area..." );
-		List<Legislator> geoLegislators = os.findLegislators( targetLong, targetLat );
-		System.out.println( "That geo-area has " + geoLegislators.size() + " legislators" );
-		System.out.println( "One of them is: " + geoLegislators.get(0).fullName );
 	}
 	
 }

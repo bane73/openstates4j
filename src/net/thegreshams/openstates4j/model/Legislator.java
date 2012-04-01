@@ -1,22 +1,15 @@
 package net.thegreshams.openstates4j.model;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.thegreshams.openstates4j.model.Committee.Member;
+import net.thegreshams.openstates4j.service.OpenStates;
+import net.thegreshams.openstates4j.service.OpenStatesException;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
 public class Legislator extends Base {
@@ -118,8 +111,40 @@ public class Legislator extends Base {
 		return sb.toString();
 	}
 	
+	public static List<Legislator> find( Map<String, String> queryParameters ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting legislators using query-parameters: " + queryParameters );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "legislators" );
+		
+		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Legislator>>(){} );
+	}
+	
+	public static Legislator get( String legislatorId ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting legislator for legislator-id(" + legislatorId + ")" );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "legislators/" + legislatorId );
+		
+		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), Legislator.class );
+	}
+	
+	public static List<Legislator> find( String longitude, String latitude ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting legislators using longitude(" + longitude + ") and latitude(" + latitude + ")" );
 
-	public static void main( String[] args ) throws IOException {
+		StringBuilder sbQueryPath = new StringBuilder( "legislators/geo" ); 
+		
+		Map<String, String> geoParams = new HashMap<String, String>();
+		geoParams.put( "long", longitude );
+		geoParams.put( "lat", latitude );
+		
+		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), geoParams, new TypeReference<List<Legislator>>(){} );
+	}
+	
+	
+
+	public static void main( String[] args ) throws OpenStatesException {
 
 		// get the API key
 		String openStates_apiKey = null;
@@ -133,35 +158,30 @@ public class Legislator extends Base {
 		if( openStates_apiKey == null || openStates_apiKey.trim().isEmpty() ) {
 			throw new IllegalArgumentException( "Program-argument 'apiKey' not found but required" );
 		} 
-				
-		// get an Event
-		URL url = new URL( "http://openstates.org/api/v1/legislators/CAL000006/?apikey=" + openStates_apiKey );
-		InputStream is = url.openStream();
-		Writer writer = new StringWriter();
-		char[] buffer = new char[1024];
-		Reader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
-		int n;
-		while( (n=reader.read(buffer)) != -1 ) {
-			writer.write(buffer, 0, n);
-		}
-		is.close();
-		String jsonEvent = writer.toString();
-		System.out.println( "JSON:\n" + jsonEvent + "\n\n" );
+		OpenStates.setApiKey( openStates_apiKey );
+
+		System.out.println( "\n*** LEGISLATORS ***\n" );
+		Map<String, String> queryParams = new HashMap<String, String>();
+		queryParams.put( "state", "ut" );
+		List<Legislator> legislators = Legislator.find( queryParams );
+		System.out.println( "Utah has " + legislators.size() + " legislators" );
+		queryParams.put( "party", "Republican" );
+		List<Legislator> repLegs = Legislator.find( queryParams );
+		queryParams.put( "party", "Democratic" );
+		List<Legislator> demLegs = Legislator.find( queryParams );
+		System.out.println( "Utah has " + repLegs.size() + " republican legislators and " + demLegs.size() + " democrat legislators");
 		
+		String targetLegislatorId = legislators.get(0).id;
+		System.out.println(  "\nGetting legislator: " + targetLegislatorId );
+		Legislator targetLegislator = Legislator.get( targetLegislatorId );
+		System.out.println( "Found legislator... " + targetLegislator.fullName );
 		
-		// perform the mapping, spit-out the object
-		ObjectMapper mapper = new ObjectMapper();	
-		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		mapper.setDateFormat( sdf );
-		Legislator legislator = mapper.readValue( jsonEvent, Legislator.class );
-		System.out.println( "\n\n" + legislator );
-		Map<String, List<Role>> oldRoles = legislator.oldRoles;
-		Iterator<String> it = oldRoles.keySet().iterator();
-		System.out.println( "Old Roles..." );
-		while( it.hasNext() ) {
-			String key = it.next();
-			System.out.println( "   --> " + key + ":" + oldRoles.get(key) );
-		}
+		String targetLong = "-78.76648";
+		String targetLat = "35.81336";
+		System.out.println( "Getting legislators in specific geo-area..." );
+		List<Legislator> geoLegislators = Legislator.find( targetLong, targetLat );
+		System.out.println( "That geo-area has " + geoLegislators.size() + " legislators" );
+		System.out.println( "One of them is: " + geoLegislators.get(0).fullName );
 	}
-	
+		
 }

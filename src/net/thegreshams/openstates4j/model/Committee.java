@@ -1,20 +1,16 @@
 package net.thegreshams.openstates4j.model;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.thegreshams.openstates4j.service.OpenStates;
+import net.thegreshams.openstates4j.service.OpenStatesException;
+
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 
 /**
  * Committee
@@ -95,12 +91,30 @@ public class Committee extends Base {
 		
 	}
 	
+	public static List<Committee> find( Map<String, String> queryParameters ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting committees using query-parameters: " + queryParameters );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "committees" );
+		
+		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Committee>>(){} );
+	}
+	
+	public static Committee get( String committeeId ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting committee for committee-id(" + committeeId + ")" );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "committees/" + committeeId );
+		
+		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), Committee.class );
+	}
+	
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 	
-	public static void main( String[] args) throws IOException {
+	public static void main( String[] args) throws OpenStatesException {
 
 		// get the API key
 		String openStates_apiKey = null;
@@ -114,35 +128,24 @@ public class Committee extends Base {
 		if( openStates_apiKey == null || openStates_apiKey.trim().isEmpty() ) {
 			throw new IllegalArgumentException( "Program-argument 'apiKey' not found but required" );
 		} 
-				
-		// get an Event
-		URL url = new URL( "http://openstates.org/api/v1/committees/MDC000065/?apikey=" + openStates_apiKey );
-		InputStream is = url.openStream();
-		Writer writer = new StringWriter();
-		char[] buffer = new char[1024];
-		Reader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
-		int n;
-		while( (n=reader.read(buffer)) != -1 ) {
-			writer.write(buffer, 0, n);
-		}
-		is.close();
-		String jsonCommittee = writer.toString();
-		System.out.println( "JSON:\n" + jsonCommittee + "\n\n" );
+		OpenStates.setApiKey( openStates_apiKey );
 		
+
+		System.out.println( "\n*** COMMITTEES ***\n" );
+		Map<String, String> queryParams = new HashMap<String, String>();
+		queryParams.put( "state", "ut" );
+		List<Committee> committees = Committee.find( queryParams );
+		System.out.println( "Utah has " + committees.size() + " committees" );
+		System.out.println( "One of Utah's committees is: " + committees.get(0).committee );
+		queryParams.put( "chamber", "upper" );
+		committees = Committee.find( queryParams );
+		System.out.println( "Utah's upper house has " + committees.size() + " committees" );
 		
-		// perform the mapping, spit-out the object
-		ObjectMapper mapper = new ObjectMapper();	
-		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		mapper.setDateFormat( sdf );
-		Committee committee = mapper.readValue( jsonCommittee, Committee.class );
-		System.out.println( "\n\n" + committee );
-		Map<String, Object> optionalProps = committee.optionalProperties;
-		Iterator<String> it = optionalProps.keySet().iterator();
-		System.out.println( "Optional Properties..." );
-		while( it.hasNext() ) {
-			String key = it.next();
-			System.out.println( "   --> " + key + ":" + optionalProps.get(key) );
-		}
+		String targetCommitteeId = committees.get(0).id;
+		System.out.println( "\nGetting committee: " + targetCommitteeId );
+		Committee targetCommittee = Committee.get( targetCommitteeId );
+		System.out.println( "Found committee... " + targetCommittee.committee );
+			
 	}
 	
 }

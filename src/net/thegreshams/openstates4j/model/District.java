@@ -12,6 +12,9 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
+import net.thegreshams.openstates4j.service.OpenStates;
+import net.thegreshams.openstates4j.service.OpenStatesException;
+
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -104,10 +107,22 @@ public class District extends Base {
 		 */
 		public static class Shape extends Base {
 			
-			private static final long serialVersionUID = 1L;
-			
-			
+			private static final long serialVersionUID = 1L;			
 		}
+		
+					
+		public static Boundary get( District district ) throws OpenStatesException {
+			return Boundary.get( district.boundaryId );
+		}
+		public static Boundary get( String boundaryId ) throws OpenStatesException {
+			
+			LOGGER.debug( "getting boundary for boundary-id(" + boundaryId + ")" );
+			
+			StringBuilder sbQueryPath = new StringBuilder( "districts/boundary/" + boundaryId );
+			
+			return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(),  Boundary.class );
+		}
+		
 	}
 	
 	
@@ -128,40 +143,24 @@ public class District extends Base {
 		
 		return sb.toString();
 	}
-	
-	public static List<District> find( String stateAbbr, String chamber, String apikey ) throws IOException {
+
+	public static List<District> find( String stateAbbr ) throws OpenStatesException {
+		return District.find( stateAbbr, null );
+	}
+	public static List<District> find( String stateAbbr, String chamber ) throws OpenStatesException {
 		
-		// build the URL
-		StringBuilder query = new StringBuilder( "http://openstates.org/api/v1/districts/" + stateAbbr + "/" );
+		LOGGER.debug( "finding districts for state(" + stateAbbr + ") and chamber(" + chamber + ")" );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "districts/" + stateAbbr );
 		if( chamber != null ) {
-			query.append( chamber + "/" );
+			sbQueryPath.append( "/" + chamber );
 		}
-		query.append( "?apikey=" + apikey );
-		URL url = new URL( query.toString() );
-		
-		// fetch the data
-		InputStream is = url.openStream();
-		Writer writer = new StringWriter();
-		char[] buffer = new char[1024];
-		Reader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
-		int n;
-		while( (n=reader.read(buffer)) != -1 ) {
-			writer.write(buffer, 0, n);
-		}
-		is.close();
-		String jsonResponse = writer.toString();
-		
-		// map to result
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		mapper.setDateFormat( sdf );
-		List<District> result = mapper.readValue( jsonResponse, new TypeReference<List<District>>(){} );
-		
-		return result;
+		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), new TypeReference<List<District>>(){} );
 	}
 
+
 	
-	public static void main( String[] args ) throws IOException {
+	public static void main( String[] args ) throws OpenStatesException {
  
 		// get the API key
 		String openStates_apiKey = null;
@@ -175,44 +174,21 @@ public class District extends Base {
 		if( openStates_apiKey == null || openStates_apiKey.trim().isEmpty() ) {
 			throw new IllegalArgumentException( "Program-argument 'apiKey' not found but required" );
 		}
-		
-		// search by just state
-		List<District> districts = District.find( "ut", null, openStates_apiKey );
-		System.out.println( "Found " + districts.size() + " districts in Utah" );
-		
-		// search by both state and lower-house and then by upper-house
-		districts = District.find( "ut", "lower", openStates_apiKey );
-		System.out.println( "Found " + districts.size() + " districts in Utah's lower-house" );
-		districts = District.find( "ut", "upper", openStates_apiKey );
-		System.out.println( "Found " + districts.size() + " districts in Utah's upper-house" );
-		
-		// get one of the boundaries
-		District targetDistrict = districts.get(0);
-		String boundaryId = targetDistrict.boundaryId;
+		OpenStates.setApiKey( openStates_apiKey );
 
-		// build the URL
-		StringBuilder query = new StringBuilder( "http://openstates.org/api/v1/districts/boundary/" + boundaryId + "/" );
-		query.append( "?apikey=" + openStates_apiKey );
-		URL url = new URL( query.toString() );
+		System.out.println( "\n*** DISTRICTS ***\n" );
+		List<District> allUtahDistricts = District.find( "ut" );
+		List<District> utahLowerDistricts = District.find( "ut", "lower" );
+		List<District> utahUpperDistricts = District.find( "ut", "upper" );
 		
-		// fetch the data
-		InputStream is = url.openStream();
-		Writer writer = new StringWriter();
-		char[] buffer = new char[1024];
-		Reader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
-		int n;
-		while( (n=reader.read(buffer)) != -1 ) {
-			writer.write(buffer, 0, n);
-		}
-		is.close();
-		String jsonResponse = writer.toString();
 		
-		// map to result
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		mapper.setDateFormat( sdf );
-		Boundary result = mapper.readValue( jsonResponse, Boundary.class );
-		System.out.println( "Boundary has " + result.numSeats + " seats" );
+		System.out.println( "Utah's lower house has " + utahLowerDistricts.size() + " districts" );
+		System.out.println( "Utah's upper house has " + utahUpperDistricts.size() + " districts" );
+		System.out.println( "Utah has " + allUtahDistricts.size() + " total districts" );
+
+		Boundary boundary = Boundary.get( utahUpperDistricts.get(5) );
+		System.out.println( "Utah's " + boundary.chamber + " district " + boundary.name + " has " + boundary.numSeats + " seat(s) (" + boundary.boundaryId + ")" );
+		
 		
 	}
 

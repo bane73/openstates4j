@@ -1,23 +1,17 @@
 package net.thegreshams.openstates4j.model;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.thegreshams.openstates4j.model.Committee.Member;
+import net.thegreshams.openstates4j.service.OpenStates;
+import net.thegreshams.openstates4j.service.OpenStatesException;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
 
@@ -115,13 +109,30 @@ public final class Event extends Base {
 		return sb.toString();
 	}
 
+	public static List<Event> find( Map<String, String> queryParameters ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting events using query-parameters: " + queryParameters );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "events" );
+		
+		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Event>>(){} );
+	}
+	
+	public static Event get( String eventId ) throws OpenStatesException {
+		
+		LOGGER.debug( "finding event for event-id(" + eventId + ")" );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "events/" + eventId );
+		
+		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), Event.class );
+	}
 	
 	
 ////////////////////////////////////////////////////////////////////////////////
 	
 	 
 	
-	public static void main( String[] args) throws IOException {
+	public static void main( String[] args) throws OpenStatesException {
 
 		// get the API key
 		String openStates_apiKey = null;
@@ -135,36 +146,20 @@ public final class Event extends Base {
 		if( openStates_apiKey == null || openStates_apiKey.trim().isEmpty() ) {
 			throw new IllegalArgumentException( "Program-argument 'apiKey' not found but required" );
 		}
+		OpenStates.setApiKey( openStates_apiKey );
+
+		System.out.println( "\n*** EVENTS ***\n" );
+		Map<String, String> queryParams = new HashMap<String, String>();
+		queryParams.put( "state", "tx" );
+		List<Event> events = Event.find( queryParams );
+		System.out.println( "Texas has " + events.size() + " events" );
+		System.out.println( "One of Texas's events is: " + events.get(0).description );
 		
-		// get an Event
-		URL url = new URL( "http://openstates.org/api/v1/events/?state=tx&type=committee:meeting&apikey=" + openStates_apiKey );
-		InputStream is = url.openStream();
-		Writer writer = new StringWriter();
-		char[] buffer = new char[1024];
-		Reader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
-		int n;
-		while( (n=reader.read(buffer)) != -1 ) {
-			writer.write(buffer, 0, n);
-		}
-		is.close();
-		String jsonEvent = writer.toString();
-		System.out.println( "JSON:\n" + jsonEvent + "\n\n" );
+		String targetEventId = events.get(0).id;
+		System.out.println( "\nGetting event: " + targetEventId );
+		Event targetEvent = Event.get( targetEventId );
+		System.out.println( "Found event... " + targetEvent.description );
 		
-		
-		// perform the mapping, spit-out the object
-		ObjectMapper mapper = new ObjectMapper();	
-		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		mapper.setDateFormat( sdf );
-		List<Event> events = mapper.readValue( jsonEvent, new TypeReference<List<Event>>(){} );
-		Event event1 = events.get(0);
-		System.out.println( "\n\n" + event1 );
-		Map<String, Object> optionalProps = event1.optionalProperties;
-		Iterator<String> it = optionalProps.keySet().iterator();
-		System.out.println( "Optional Properties..." );
-		while( it.hasNext() ) {
-			String key = it.next();
-			System.out.println( "   --> " + key + ":" + optionalProps.get(key) );
-		}
 	}
 	
 }

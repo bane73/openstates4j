@@ -1,23 +1,17 @@
 package net.thegreshams.openstates4j.model;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.thegreshams.openstates4j.model.Committee.Member;
+import net.thegreshams.openstates4j.service.OpenStates;
+import net.thegreshams.openstates4j.service.OpenStatesException;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 
 
 /**
@@ -246,6 +240,34 @@ public final class Bill extends Base {
 		}
 	}
 	
+
+	public static List<Bill> find( Map<String, String> queryParameters ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting bills using query-parameters: " + queryParameters );
+	
+		StringBuilder sbQueryPath = new StringBuilder( "bills" );
+		
+		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Bill>>(){} );
+	}
+	
+	public static Bill get( String stateAbbr, String session, String billId ) throws OpenStatesException {
+		return Bill.get( stateAbbr, session, billId, null );
+	}
+	public static Bill get( String stateAbbr, String session, String billId, String chamber ) throws OpenStatesException {
+		
+		LOGGER.debug( "getting bill for bill-id(" + billId + "), state(" + stateAbbr + "), session(" + session + ")" +
+						( chamber == null ? "" : (", chamber(" + chamber + ")") ) );
+		
+		StringBuilder sbQueryPath = new StringBuilder( "bills/" + stateAbbr + "/" + session + "/" );
+		if( chamber != null ) {
+			sbQueryPath.append( chamber + "/" );
+		}
+		sbQueryPath.append( billId );
+		
+		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), Bill.class );
+	}
+	
+	
 	
 
 	
@@ -254,7 +276,7 @@ public final class Bill extends Base {
 	
 	 
 	
-	public static void main( String[] args) throws IOException {
+	public static void main( String[] args) throws OpenStatesException {
 
 		// get the API key
 		String openStates_apiKey = null;
@@ -268,36 +290,21 @@ public final class Bill extends Base {
 		if( openStates_apiKey == null || openStates_apiKey.trim().isEmpty() ) {
 			throw new IllegalArgumentException( "Program-argument 'apiKey' not found but required" );
 		}
-				
-		// get an Event
-		URL url = new URL( "http://openstates.org/api/v1/bills/ca/20092010/AB%20667/?apikey=" + openStates_apiKey );
-		InputStream is = url.openStream();
-		Writer writer = new StringWriter();
-		char[] buffer = new char[1024];
-		Reader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
-		int n;
-		while( (n=reader.read(buffer)) != -1 ) {
-			writer.write(buffer, 0, n);
-		}
-		is.close();
-		String jsonBill = writer.toString();
-		System.out.println( "JSON:\n" + jsonBill + "\n\n" );
-	
-		// perform the mapping, spit-out the object
-		ObjectMapper mapper = new ObjectMapper();	
-		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		mapper.setDateFormat( sdf );
-		Bill bill = mapper.readValue( jsonBill, Bill.class );
-		System.out.println( "\n\n" + bill );
-		System.out.println( "SOURCES: " + bill.sources );
-		Map<String, Object> optionalProps = bill.optionalProperties;
-		Iterator<String> it = optionalProps.keySet().iterator();
-		System.out.println( "Optional Properties..." );
-		while( it.hasNext() ) {
-			String key = it.next();
-			System.out.println( "   --> " + key + ":" + optionalProps.get(key) );
-		}
-		System.out.println( "SPONSORS --> " + bill.sponsors );
+		OpenStates.setApiKey( openStates_apiKey );
+
+		System.out.println( "\n*** BILLS ***\n" );
+		Map<String, String> queryParams = new HashMap<String, String>();
+		queryParams.put( "state", "ut" );
+		queryParams.put( "updated_since", "2012-01-01" );
+		queryParams.put( "chamber", "upper" );
+		List<Bill> bills = Bill.find( queryParams );
+		System.out.println( "Utah's upper-house has " + bills.size() + " bills that have been updated in 2012" );
+		System.out.println( "One of Utah's 2012 upper-house bills is: " + bills.get(0).title );
+		
+		Bill bill = bills.get(0);
+		System.out.println( "\nGetting bill: " + bill.id );
+		Bill targetBill = Bill.get( bill.state, bill.session, bill.id );
+		System.out.println( "Found bill... " + targetBill.title );
 	}
 	
 }
