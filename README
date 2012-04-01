@@ -6,8 +6,9 @@ REQUIREMENTS
 	In order to use this project, you must first acquire a Sunlight Labs API Key.
 	You can obtain a key by visiting http://services.sunlightlabs.com
 
-	You should also review the Open States API documentation, as this interface is
-	only meant to provide a thin wrapper it and should (hopefully) closely mirror it.
+	You should also review the Open States API documentation, as this interface
+	is only meant to provide a thin wrapper it and should (hopefully) closely
+	mirror it.
 	The API documentation can be found at http://openstates.org/api/
 
 
@@ -24,7 +25,7 @@ EXAMPLE
 	// find all Districts for the state of California
 	List<District> allCaliforniaDistricts = District.find( "ca" );
 	
-	// find all Bills in New York's upper-house that have been updated since Jan. 1st, 2012
+	// find all NY's upper-house Bills that have been updated since 01Jan2012
 	Map<String, String> queryParams = new HashMap<String, String>();
 	queryParams.put( "state", "ny" );
 	queryParams.put( "updated_since", "2012-01-01" );
@@ -46,7 +47,8 @@ EXAMPLE
 	
 
 HELP
-	Please submit usage-questions to: https://groups.google.com/forum/?fromgroups#!forum/fifty-state-project
+	Please submit usage-questions to: https://groups.google.com/forum/
+	?fromgroups#!forum/fifty-state-project
 
 
 BUGS
