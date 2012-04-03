@@ -39,10 +39,11 @@ EXAMPLE
 	List<Legislator> geoLegislators = Legislator.find( "-78.76648", "35.81336" );
 	
 	// accessing a Legislator's properties
-	String id = Legislator.id;
-	String fullName = Legislator.fullName;
-	String email = Legislator.email;
-	boolean isActive = Legislator.isActive;
+	Legislator legislator = geoLegislators.get(0);
+	String id = legislator.id;
+	String fullName = legislator.fullName;
+	String email = legislator.email;
+	boolean isActive = legislator.isActive;
 	
 
 HELP
