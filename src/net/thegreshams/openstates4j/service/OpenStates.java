@@ -53,8 +53,8 @@ public class OpenStates {
 	private static String apiKey;
 	public static void setApiKey( String apiKey ) throws OpenStatesException {
 		
-		if( apiKey == null || apiKey.trim().length() != 32 ) {
-			String msg = "apiKey cannot be null & must be 32-characters long; was: '" + apiKey + "'";
+		if( apiKey == null || apiKey.trim().isEmpty() ) {
+			String msg = "apiKey cannot be null or empty; was: '" + apiKey + "'";
 			LOGGER.error( msg );
 			throw new OpenStatesException( msg );
 		}
