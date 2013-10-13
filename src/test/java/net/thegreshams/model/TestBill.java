@@ -19,14 +19,14 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class BillTest {
+public class TestBill {
 	
 	private Bill bill;
 	
 	@Before
 	public void setUp() throws Exception {
 		
-		File billFile = new File( BillTest.class.getResource("/bill.json" ).getFile() );
+		File billFile = new File( TestBill.class.getResource("/bill.json" ).getFile() );
 		InputStream is 
 			= new BufferedInputStream( new FileInputStream(billFile) );  
 		byte[] buffer = new byte[(int) billFile.length()];  

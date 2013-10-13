@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class BaseTest {
+public class TestBase {
 	
 	final static String JSON = 
 			"{" +
