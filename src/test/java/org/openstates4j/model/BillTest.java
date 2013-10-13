@@ -48,7 +48,6 @@ public class BillTest {
 	
 	@Test
 	public void testToString() {
-		System.out.println(bill.updatedAt);
 		assertEquals( "Bill [ (id:AB 667) (title:An act to amend Section 1750.1 " +
 					  	"of the Business and Professions Code, and to amend Section " +
 					  	"104830 of, and to add Section 104762 to, the Health and " +
