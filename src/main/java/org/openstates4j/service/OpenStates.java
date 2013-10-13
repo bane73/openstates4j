@@ -1,4 +1,4 @@
-package net.thegreshams.openstates4j.service;
+package org.openstates4j.service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,21 +10,13 @@ import java.io.Writer;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-import net.thegreshams.openstates4j.model.Bill;
-import net.thegreshams.openstates4j.model.Committee;
-import net.thegreshams.openstates4j.model.District;
-import net.thegreshams.openstates4j.model.District.Boundary;
-import net.thegreshams.openstates4j.model.District.Legislator;
-import net.thegreshams.openstates4j.model.Event;
-
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class OpenStates {
 

@@ -1,11 +1,12 @@
-package net.thegreshams.openstates4j.model;
+package org.openstates4j.model;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.annotate.JsonAnySetter;
+
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 /**
  * Base

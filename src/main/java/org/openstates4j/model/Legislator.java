@@ -1,16 +1,16 @@
-package net.thegreshams.openstates4j.model;
+package org.openstates4j.model;
 
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.thegreshams.openstates4j.model.Committee.Member;
-import net.thegreshams.openstates4j.service.OpenStates;
-import net.thegreshams.openstates4j.service.OpenStatesException;
+import org.openstates4j.model.Committee.Member;
+import org.openstates4j.service.OpenStates;
+import org.openstates4j.service.OpenStatesException;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.type.TypeReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 public class Legislator extends Base {
 

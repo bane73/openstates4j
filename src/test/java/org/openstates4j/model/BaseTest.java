@@ -1,11 +1,13 @@
-package net.thegreshams.openstates4j.model;
+package org.openstates4j.model;
 
 import static org.junit.Assert.*;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.openstates4j.model.Base;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class BaseTest {
 	

@@ -1,23 +1,12 @@
-package net.thegreshams.openstates4j.model;
+package org.openstates4j.model;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Map;
 
-import net.thegreshams.openstates4j.service.OpenStates;
-import net.thegreshams.openstates4j.service.OpenStatesException;
+import org.openstates4j.service.OpenStates;
+import org.openstates4j.service.OpenStatesException;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 
 /**
