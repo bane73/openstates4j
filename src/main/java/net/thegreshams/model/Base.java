@@ -1,4 +1,4 @@
-package org.openstates4j.model;
+package net.thegreshams.model;
 
 import java.io.Serializable;
 import java.util.HashMap;

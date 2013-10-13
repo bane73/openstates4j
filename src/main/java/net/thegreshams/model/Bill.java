@@ -1,4 +1,4 @@
-package org.openstates4j.model;
+package net.thegreshams.model;
 
 import java.net.URL;
 import java.util.Date;
@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.openstates4j.model.Committee.Member;
-import org.openstates4j.service.OpenStates;
-import org.openstates4j.service.OpenStatesException;
+import net.thegreshams.model.Committee.Member;
+import net.thegreshams.service.OpenStates;
+import net.thegreshams.service.OpenStatesException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;

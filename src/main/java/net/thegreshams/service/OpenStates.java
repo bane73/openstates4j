@@ -1,4 +1,4 @@
-package org.openstates4j.service;
+package net.thegreshams.service;
 
 import java.io.BufferedReader;
 import java.io.IOException;

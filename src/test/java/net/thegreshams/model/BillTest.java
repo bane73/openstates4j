@@ -1,4 +1,4 @@
-package org.openstates4j.model;
+package net.thegreshams.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -11,10 +11,11 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.TimeZone;
 
+import net.thegreshams.model.Base;
+import net.thegreshams.model.Bill;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.openstates4j.model.Base;
-import org.openstates4j.model.Bill;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

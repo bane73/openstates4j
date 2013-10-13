@@ -1,10 +1,10 @@
-package org.openstates4j.model;
+package net.thegreshams.model;
 
 import static org.junit.Assert.*;
+import net.thegreshams.model.Base;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openstates4j.model.Base;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
