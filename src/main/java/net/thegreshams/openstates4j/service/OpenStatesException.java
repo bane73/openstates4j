@@ -1,4 +1,4 @@
-package net.thegreshams.service;
+package net.thegreshams.openstates4j.service;
 
 import org.apache.log4j.Logger;
 

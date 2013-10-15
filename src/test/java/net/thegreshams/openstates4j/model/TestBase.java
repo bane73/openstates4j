@@ -1,7 +1,7 @@
-package net.thegreshams.model;
+package net.thegreshams.openstates4j.model;
 
 import static org.junit.Assert.*;
-import net.thegreshams.model.Base;
+import net.thegreshams.openstates4j.model.Base;
 
 import org.junit.Before;
 import org.junit.Test;

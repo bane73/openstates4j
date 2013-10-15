@@ -1,9 +1,9 @@
-package net.thegreshams.model;
+package net.thegreshams.openstates4j.model;
 
 import java.util.List;
 
-import net.thegreshams.service.OpenStates;
-import net.thegreshams.service.OpenStatesException;
+import net.thegreshams.openstates4j.service.OpenStates;
+import net.thegreshams.openstates4j.service.OpenStatesException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
