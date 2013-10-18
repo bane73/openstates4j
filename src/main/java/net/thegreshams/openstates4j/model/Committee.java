@@ -31,21 +31,37 @@ public class Committee extends Base {
 	public		@JsonProperty( "members" )						List<Member>	members;
 	public		@JsonProperty( "sources" )						List<Source>	sources;
 	
+	public Committee(String committeeName) {
+		this.committee = committeeName;
+	}
 	
-	
+	public Committee() {
+	}
 	
 	/**
 	 * Member
 	 * 
 	 * @author Brandon Gresham <brandon@thegreshams.net>
 	 */
-	public static class Member extends Base {
+	public static class Member extends Base implements Comparable<Member> {
 		
 		private static final long serialVersionUID = 1L;
 		
 		public		@JsonProperty( "legislator" )					String			legislator;
 		public		@JsonProperty( "role" )							String			role;
 		public		@JsonProperty( "leg_id" )						String			legislatorId;
+
+		public Member() {}
+		/**
+		 * For temporary construction only. After constructing Committee.Member you can 
+		 * then pass it to Collections.binarySearch assuming that you have 
+		 * used BulkData.LoadState.
+		 * 
+		 * @param legislatorId
+		 */
+		public Member(String legislatorId) {
+			this.legislatorId = legislatorId;
+		}
 		
 		@Override
 		public String toString() {
@@ -61,7 +77,15 @@ public class Committee extends Base {
 			
 			return sb.toString();
 		}
-		
+
+		@Override
+		public int compareTo(Member o) {
+			if ( legislatorId == null && o.legislatorId != null ) return -1;
+			else if ( legislatorId == null && o.legislatorId == null ) return 0;
+			else if ( legislatorId != null && o.legislatorId == null ) return 1;
+			else return legislatorId.compareTo(o.legislatorId);
+		}
+
 	}
 	
 	/**

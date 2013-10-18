@@ -77,7 +77,7 @@ public class Legislator extends Base {
 		public		@JsonProperty( "chamber" )					String				chamber;
 		public		@JsonProperty( "district" )					String				district;
 		public		@JsonProperty( "party" )					String				party;
-		public		@JsonProperty( "committee" )				String				committee;
+		public		@JsonProperty( "committee" )				Committee			committee;
 
 		@Override
 		public String toString() {

@@ -22,9 +22,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class TestBill {
 	
 	private Bill bill;
+	private boolean setupDone = false;
 	
 	@Before
 	public void setUp() throws Exception {
+		if ( setupDone ) return;
+		setupDone = true;
 		
 		File billFile = new File( TestBill.class.getResource("/bill.json" ).getFile() );
 		InputStream is 
