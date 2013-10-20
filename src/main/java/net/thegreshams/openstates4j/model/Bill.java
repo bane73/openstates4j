@@ -1,5 +1,6 @@
 package net.thegreshams.openstates4j.model;
 
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
@@ -241,7 +242,7 @@ public final class Bill extends Base {
 	}
 	
 
-	public static List<Bill> find( Map<String, String> queryParameters ) throws OpenStatesException {
+	public static List<Bill> find( Map<String, String> queryParameters ) throws OpenStatesException, URISyntaxException {
 		
 		LOGGER.debug( "getting bills using query-parameters: " + queryParameters );
 	
@@ -250,10 +251,10 @@ public final class Bill extends Base {
 		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Bill>>(){} );
 	}
 	
-	public static Bill get( String stateAbbr, String session, String billId ) throws OpenStatesException {
+	public static Bill get( String stateAbbr, String session, String billId ) throws OpenStatesException, URISyntaxException {
 		return Bill.get( stateAbbr, session, billId, null );
 	}
-	public static Bill get( String stateAbbr, String session, String billId, String chamber ) throws OpenStatesException {
+	public static Bill get( String stateAbbr, String session, String billId, String chamber ) throws OpenStatesException, URISyntaxException {
 		
 		LOGGER.debug( "getting bill for bill-id(" + billId + "), state(" + stateAbbr + "), session(" + session + ")" +
 						( chamber == null ? "" : (", chamber(" + chamber + ")") ) );
@@ -276,7 +277,7 @@ public final class Bill extends Base {
 	
 	 
 	
-	public static void main( String[] args) throws OpenStatesException {
+	public static void main( String[] args) throws OpenStatesException, URISyntaxException {
 
 		// get the API key
 		String openStates_apiKey = null;

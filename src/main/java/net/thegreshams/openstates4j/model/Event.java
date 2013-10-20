@@ -1,5 +1,6 @@
 package net.thegreshams.openstates4j.model;
 
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
@@ -108,7 +109,7 @@ public final class Event extends Base {
 		return sb.toString();
 	}
 
-	public static List<Event> find( Map<String, String> queryParameters ) throws OpenStatesException {
+	public static List<Event> find( Map<String, String> queryParameters ) throws OpenStatesException, URISyntaxException {
 		
 		LOGGER.debug( "getting events using query-parameters: " + queryParameters );
 		
@@ -117,7 +118,7 @@ public final class Event extends Base {
 		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Event>>(){} );
 	}
 	
-	public static Event get( String eventId ) throws OpenStatesException {
+	public static Event get( String eventId ) throws OpenStatesException, URISyntaxException {
 		
 		LOGGER.debug( "finding event for event-id(" + eventId + ")" );
 		
@@ -131,7 +132,7 @@ public final class Event extends Base {
 	
 	 
 	
-	public static void main( String[] args) throws OpenStatesException {
+	public static void main( String[] args) throws OpenStatesException, URISyntaxException {
 
 		// get the API key
 		String openStates_apiKey = null;

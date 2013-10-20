@@ -1,5 +1,6 @@
 package net.thegreshams.openstates4j.model;
 
+import java.net.URISyntaxException;
 import java.util.List;
 
 import net.thegreshams.openstates4j.service.OpenStates;
@@ -100,10 +101,10 @@ public class District extends Base {
 		}
 		
 					
-		public static Boundary get( District district ) throws OpenStatesException {
+		public static Boundary get( District district ) throws OpenStatesException, URISyntaxException {
 			return Boundary.get( district.boundaryId );
 		}
-		public static Boundary get( String boundaryId ) throws OpenStatesException {
+		public static Boundary get( String boundaryId ) throws OpenStatesException, URISyntaxException {
 			
 			LOGGER.debug( "getting boundary for boundary-id(" + boundaryId + ")" );
 			
@@ -133,10 +134,10 @@ public class District extends Base {
 		return sb.toString();
 	}
 
-	public static List<District> find( String stateAbbr ) throws OpenStatesException {
+	public static List<District> find( String stateAbbr ) throws OpenStatesException, URISyntaxException {
 		return District.find( stateAbbr, null );
 	}
-	public static List<District> find( String stateAbbr, String chamber ) throws OpenStatesException {
+	public static List<District> find( String stateAbbr, String chamber ) throws OpenStatesException, URISyntaxException {
 		
 		LOGGER.debug( "finding districts for state(" + stateAbbr + ") and chamber(" + chamber + ")" );
 		
@@ -149,7 +150,7 @@ public class District extends Base {
 
 
 	
-	public static void main( String[] args ) throws OpenStatesException {
+	public static void main( String[] args ) throws OpenStatesException, URISyntaxException {
  
 		// get the API key
 		String openStates_apiKey = null;

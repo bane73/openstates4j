@@ -7,7 +7,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Iterator;
@@ -23,7 +24,7 @@ public class OpenStates {
 	protected static final Logger LOGGER = Logger.getRootLogger();
 	
 
-	private static final String BASE_URL = "http://openstates.org/api/v1/";
+	private static final String BASE_URL = "openstates.org";
 	private static final ObjectMapper MAPPER;
 	static {
 		MAPPER = new ObjectMapper();
@@ -53,15 +54,15 @@ public class OpenStates {
 		OpenStates.apiKey = apiKey.trim();		
 	}
 
-	public static <T> T queryForJsonAndBuildObject( String queryPath, Class<T> valueType ) throws OpenStatesException {
+	public static <T> T queryForJsonAndBuildObject( String queryPath, Class<T> valueType ) throws OpenStatesException, URISyntaxException {
 		return OpenStates.queryForJsonAndBuildObject( queryPath, null, valueType );
 	}
 	
-	public static <T> T queryForJsonAndBuildObject( String queryPath, TypeReference<?> valueTypeRef ) throws OpenStatesException {
+	public static <T> T queryForJsonAndBuildObject( String queryPath, TypeReference<?> valueTypeRef ) throws OpenStatesException, URISyntaxException {
 		return OpenStates.queryForJsonAndBuildObject( queryPath, null, valueTypeRef );
 	}
 	
-	public static <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, TypeReference<?> valueTypeRef ) throws OpenStatesException {
+	public static <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, TypeReference<?> valueTypeRef ) throws OpenStatesException, URISyntaxException {
 
 		String jsonResponse = OpenStates.buildUrlQueryStringAndGetJsonResponse( queryPath, queryParams );
 		
@@ -77,16 +78,16 @@ public class OpenStates {
 ///////////////////////////////////////////////////////////////////////////////
 	
 
-	private static <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, Class<T> valueType ) throws OpenStatesException {
+	private static <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, Class<T> valueType ) throws OpenStatesException, URISyntaxException {
 
 		String jsonResponse = OpenStates.buildUrlQueryStringAndGetJsonResponse( queryPath, queryParams );
 		
 		return OpenStates.mapObject( jsonResponse, valueType );
 	}
 	
-	private static String buildUrlQueryStringAndGetJsonResponse( String queryPath, Map<String, String> queryParameters ) throws OpenStatesException {
+	private static String buildUrlQueryStringAndGetJsonResponse( String queryPath, Map<String, String> queryParameters ) throws OpenStatesException, URISyntaxException {
 
-		String urlQueryString = OpenStates.buildUrlQueryString( queryPath, queryParameters );
+		URI urlQueryString = OpenStates.buildUrlQueryString( queryPath, queryParameters );
 		String jsonResponse = OpenStates.getJsonResponse( urlQueryString );
 		
 		return jsonResponse;
@@ -157,7 +158,7 @@ public class OpenStates {
 		return result;
 	}
 	
-	private static String getJsonResponse( String urlQuery ) throws OpenStatesException {
+	private static String getJsonResponse( URI urlQuery ) throws OpenStatesException {
 		
 		LOGGER.debug( "getting json-response from url-query: " + urlQuery );
 		
@@ -165,8 +166,8 @@ public class OpenStates {
 		InputStream is = null;
 		try {
 			
-			URL url = new URL( urlQuery );
-			is = url.openStream();
+//			URI uri = new URI( urlQuery );
+			is = urlQuery.toURL().openStream();
 			Writer writer = new StringWriter();
 			char[] buffer = new char[1024];
 			Reader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
@@ -197,7 +198,7 @@ public class OpenStates {
 		return jsonResponse;
 	}
 	
-	private static String buildUrlQueryString( String queryPath, Map<String, String> queryParameters ) throws OpenStatesException {
+	private static URI buildUrlQueryString( String queryPath, Map<String, String> queryParameters ) throws OpenStatesException, URISyntaxException {
 		
 		if( OpenStates.apiKey == null ) {
 			String msg = "you must first set your api-key like this: OpenStates.setApiKey( {YOUR_API_KEY} );" +
@@ -205,11 +206,9 @@ public class OpenStates {
 			LOGGER.fatal( msg );
 			throw new OpenStatesException( msg );
 		}
+		StringBuilder sb = new StringBuilder(  );
 		
-		StringBuilder sb = new StringBuilder( OpenStates.BASE_URL );
-		
-		sb.append( queryPath + "/" );
-		sb.append( "?apikey=" + OpenStates.apiKey );
+		sb.append( "apikey=" + OpenStates.apiKey );
 		
 		if( queryParameters != null ) {
 			Iterator<String> it = queryParameters.keySet().iterator();
@@ -220,7 +219,13 @@ public class OpenStates {
 			}
 		}
 		
-		return sb.toString();
+		return new URI (
+			"http", 
+			OpenStates.BASE_URL, 
+			"/api/v1/" + queryPath + "/", 
+			sb.toString(), 
+			null 
+		);
 	}
 	
 }

@@ -10,8 +10,8 @@ import java.util.TreeMap;
 
 import net.thegreshams.openstates4j.bulkdata.Bills;
 import net.thegreshams.openstates4j.bulkdata.Committees;
-import net.thegreshams.openstates4j.bulkdata.Legislature;
-import net.thegreshams.openstates4j.bulkdata.LoadState;
+import net.thegreshams.openstates4j.bulkdata.Legislators;
+import net.thegreshams.openstates4j.bulkdata.LoadBulkData;
 import net.thegreshams.openstates4j.model.Bill;
 import net.thegreshams.openstates4j.model.Committee;
 import net.thegreshams.openstates4j.model.Legislator;
@@ -20,13 +20,13 @@ import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TestLoadState {
+public class TestLoadBulkData {
 	protected static final Logger LOGGER = Logger.getRootLogger();
 
 	@BeforeClass
 	public static void setup() {
 		try {
-			LoadState.Load(LoadState.class.getResource("/2013-10-07-ca-json.zip").getFile(), TimeZone.getTimeZone("GMT-08:00") );
+			LoadBulkData.LoadCurrentTerm(LoadBulkData.class.getResource("/2013-10-07-ca-json.zip").getFile(), "20132014", TimeZone.getTimeZone("GMT-08:00") );
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -36,7 +36,9 @@ public class TestLoadState {
 	public void testCommitteeConsistencyCheck() {
 		TreeMap<String, ArrayList<String>> committeeMembersByLegislators = new TreeMap<String, ArrayList<String>>();
 		// first, create a map of committees and their members list according to the legislator records
-		for ( Legislator legislator: Legislature.legislators() ) {
+		for ( Legislator legislator: Legislators.legislators() ) {
+			// only for current session
+//			if ( !legislator.isActive ) continue;
 			for (Legislator.Role role: legislator.roles ) {
 				// not all roles are committee roles.
 				if ( role.committee != null ) {
@@ -58,16 +60,16 @@ public class TestLoadState {
 			ArrayList<String> committeeMembers = committeeMembersByLegislators.get(key);
 			Committee committee = Committees.get(key);
 			for ( Committee.Member member: committee.members ) {
-				if ( member.legislatorId != null ) {
-					if ( Collections.binarySearch(committeeMembers, member.legislatorId) == -1 ) {
+				if ( member.legislator.id != null ) {
+					if ( Collections.binarySearch(committeeMembers, member.legislator.id) == -1 ) {
 						LOGGER.info("Discripency between committee membership as defined in Legislator.roles and Committee.members:\n" 
-							+ "Committee says that Legislator " + member.legislatorId + " is a member, but the Legislator does not have this role"
+							+ "***: Committee says that Legislator " + member.legislator.id + " is a member, but the Legislator does not have this role"
 						);
 					}
 				} else {
-					LOGGER.info("Committee.members has a null Committee.members.legislatorId:\n" 
-						+ "Committee is " + committee.committee + "\n"
-						+ "Committee.Member is " + member
+					LOGGER.info("***: Committee.members has a null Committee.members.legislator.id:\n" 
+						+ "     Committee is " + committee.id + ":" + committee.committee + "\n"
+						+ "     Committee.Member is " + member
 					);					
 				}
 			}
@@ -76,13 +78,13 @@ public class TestLoadState {
 		for ( Committee committee: Committees.committees() ) {
 			ArrayList<String> committeeMembers = committeeMembersByLegislators.get(committee.id);
 			if ( committeeMembers == null ) {
-				LOGGER.info("Committee not found for comittee.id referenced in a Legislator.roles list:" + committee.id );
+				LOGGER.info("***: No (active) legislator has a role defined for comittee.id:" + committee.id );
 				continue;
 			}
 			for ( String legislatorId: committeeMembers ) {
 				if ( Collections.binarySearch( committee.members, new Committee.Member(legislatorId) ) == -1) {
-					LOGGER.info("Discripency between Committee.members and committee membership as defined in Legislator.roles:\n" 
-							+ "Legislator.roles says that " + legislatorId + " is a member but that legislatorId is not found in committee " + committee.id
+					LOGGER.info("***: Discripency between Committee.members and committee membership as defined in Legislator.roles:\n" 
+							+ "     Legislator.roles says that " + legislatorId + " is a member but that member.legislator.id is not found in committee " + committee.id
 						);
 				}
 			}
@@ -106,9 +108,9 @@ public class TestLoadState {
 				String legislatorId = determinePrincipalAuthor(bill);
 				// a committee may be an author
 				if ( legislatorId != null ) {
-					Legislator legislator = Legislature.get(legislatorId);
-					if ( legislator == null ) LOGGER.info("Bill legislatorId " + legislatorId + " references non-existant or inactive legislator for bill:" + bill);
-					else if ( legislator.party == null ) LOGGER.info("Legislator Party is null:" + legislator);
+					Legislator legislator = Legislators.get(legislatorId);
+					if ( legislator == null ) LOGGER.info("***: Bill legislatorId " + legislatorId + " references non-existant or inactive legislator for bill:" + bill);
+					else if ( legislator.party == null ) LOGGER.info("***: Legislator Party is null:" + legislator);
 					else partyStats.get(legislator.party).billsPassed++; 
 				}
 			}
@@ -119,7 +121,7 @@ public class TestLoadState {
 		// show all bills passed
 		for ( String party: partyStats.keySet() ) {
 			PartyStat partyStat = partyStats.get(party);
-			LOGGER.info("The " + party + " has " + partyStat.memberCount + " members and passed " + partyStat.billsPassed + " bills.");
+			LOGGER.info("The " + party + " party has " + partyStat.memberCount + " members and passed " + partyStat.billsPassed + " bills.");
 			if ( partyStat.billsPassed > majorityParty.billsPassed ) majorityPartyPassedMoreBills = false;
 		}
 		assertTrue( majorityPartyPassedMoreBills );
@@ -127,7 +129,8 @@ public class TestLoadState {
 	}
 	
 	private void determineParties( TreeMap<String, PartyStat> partyStats ) {
-		for ( Legislator legislator: Legislature.legislators() ) {
+		for ( Legislator legislator: Legislators.legislators() ) {
+			if ( !legislator.isActive ) continue;
 			PartyStat partyStat = partyStats.get(legislator.party); 
 			if ( partyStat == null ) {
 				partyStat = new PartyStat();

@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 
 import net.thegreshams.openstates4j.model.Legislator;
 
-public final class Legislature {
+public final class Legislators {
 	
 	protected static final Logger LOGGER = Logger.getRootLogger();
 

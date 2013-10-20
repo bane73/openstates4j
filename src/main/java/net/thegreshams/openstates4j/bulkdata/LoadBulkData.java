@@ -19,10 +19,33 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public final class LoadState {
+public final class LoadBulkData {
 	protected static final Logger LOGGER = Logger.getRootLogger();
 	
-	public static void Load(String stateBulkData, TimeZone stateTimeZone ) throws ZipException, IOException {
+	/**
+	 * Testing 
+	 */
+	public static void main(String... args) throws Exception {
+		LoadBulkData.LoadCurrentTerm(LoadBulkData.class.getResource("/2013-10-07-ca-json.zip").getFile(), "20132014", TimeZone.getTimeZone("GMT-08:00") );
+//		LOGGER.info(Legislators.get("CAL000112"));
+//		LOGGER.info(Committees.get("CAC000270").members.get(0));
+		LOGGER.info(Legislators.get("CAL000112"));
+		LOGGER.info( Committees.get("CAC000270").committee );
+		LOGGER.info( Committees.get("CAC000270").members.get(0) );
+	}
+	
+	/**
+	 * Note that the currentTerm must be defined as the currentTerm at the moment
+	 * because only "isActive" legislators are loaded. Thus, the junit
+	 * test will probably fail every year when the currentTerm changes
+	 *  
+	 * @param stateBulkData
+	 * @param currentTerm
+	 * @param stateTimeZone
+	 * @throws ZipException
+	 * @throws IOException
+	 */
+	public static void LoadCurrentTerm(String stateBulkData, String currentTerm, TimeZone stateTimeZone ) throws ZipException, IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
 		sdf.setTimeZone(stateTimeZone);
@@ -31,7 +54,7 @@ public final class LoadState {
 		ZipFile zipFile = new ZipFile( stateBulkData );
 		readLegislators(mapper, zipFile);
 		readCommittees(mapper, zipFile);
-		readBills(mapper, zipFile);
+		readBills(mapper, zipFile, currentTerm);
 		zipFile.close();
 		// map Legislator.Role.Committee to actual Committee objects.
 		// sort Committee.members
@@ -41,7 +64,7 @@ public final class LoadState {
 	
 	private static void PostProcess() {
 		// put full Committee references into Legislator.Roles
-		for ( Legislator legislator: Legislature.legislators() ) {
+		for ( Legislator legislator: Legislators.legislators() ) {
 			for ( Legislator.Role role: legislator.roles ) {
 				if ( role.committee != null ) {
 					// note that not all roles describe membership in a committee
@@ -55,16 +78,21 @@ public final class LoadState {
 		}
 		for ( Committee committee: Committees.committees() ) {
 			Collections.sort(committee.members);
+			for ( Committee.Member member: committee.members ) {
+				if ( member.legislator != null && member.legislator.id != null ) {
+					member.legislator = Legislators.get(member.legislator.id);
+				}
+			}
 		}
 	}
 
-	private static void readBills(ObjectMapper mapper, ZipFile zipFile) throws JsonParseException, JsonMappingException, IOException {
+	private static void readBills(ObjectMapper mapper, ZipFile zipFile, String currentTerm) throws JsonParseException, JsonMappingException, IOException {
 		Enumeration<? extends ZipEntry> entries = zipFile.entries();
 		while ( entries.hasMoreElements() ) {
 			ZipEntry entry = entries.nextElement();
 			if ( entry.isDirectory() ) continue;
 			String eName = entry.getName();
-			if ( eName.contains("ca/20132014")) {
+			if ( eName.contains(currentTerm)) {
 				Bill bill = mapper.readValue( zipFile.getInputStream(entry), Bill.class );
 				Bills.put(bill.id, bill);
 			}
@@ -81,7 +109,7 @@ public final class LoadState {
 				Legislator legislator = 
 						mapper.readValue( zipFile.getInputStream(entry), Legislator.class );
 				if ( legislator.isActive ) {
-					Legislature.put(legislator.id, legislator );
+					Legislators.put(legislator.id, legislator );
 				}
 			}
 		}

@@ -1,5 +1,6 @@
 package net.thegreshams.openstates4j.model;
 
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -111,7 +112,7 @@ public class Legislator extends Base {
 		return sb.toString();
 	}
 	
-	public static List<Legislator> find( Map<String, String> queryParameters ) throws OpenStatesException {
+	public static List<Legislator> find( Map<String, String> queryParameters ) throws OpenStatesException, URISyntaxException {
 		
 		LOGGER.debug( "getting legislators using query-parameters: " + queryParameters );
 		
@@ -120,7 +121,7 @@ public class Legislator extends Base {
 		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Legislator>>(){} );
 	}
 	
-	public static Legislator get( String legislatorId ) throws OpenStatesException {
+	public static Legislator get( String legislatorId ) throws OpenStatesException, URISyntaxException {
 		
 		LOGGER.debug( "getting legislator for legislator-id(" + legislatorId + ")" );
 		
@@ -129,7 +130,7 @@ public class Legislator extends Base {
 		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), Legislator.class );
 	}
 	
-	public static List<Legislator> find( String longitude, String latitude ) throws OpenStatesException {
+	public static List<Legislator> find( String longitude, String latitude ) throws OpenStatesException, URISyntaxException {
 		
 		LOGGER.debug( "getting legislators using longitude(" + longitude + ") and latitude(" + latitude + ")" );
 
@@ -144,7 +145,7 @@ public class Legislator extends Base {
 	
 	
 
-	public static void main( String[] args ) throws OpenStatesException {
+	public static void main( String[] args ) throws OpenStatesException, URISyntaxException {
 
 		// get the API key
 		String openStates_apiKey = null;
