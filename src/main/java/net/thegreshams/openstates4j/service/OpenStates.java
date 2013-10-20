@@ -165,8 +165,6 @@ public class OpenStates {
 		String jsonResponse = null;
 		InputStream is = null;
 		try {
-			
-//			URI uri = new URI( urlQuery );
 			is = urlQuery.toURL().openStream();
 			Writer writer = new StringWriter();
 			char[] buffer = new char[1024];

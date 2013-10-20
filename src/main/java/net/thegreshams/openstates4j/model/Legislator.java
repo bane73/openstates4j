@@ -13,7 +13,7 @@ import net.thegreshams.openstates4j.service.OpenStatesException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 
-public class Legislator extends Base {
+public class Legislator extends Base implements Comparable<Legislator> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -37,6 +37,10 @@ public class Legislator extends Base {
 	public		@JsonProperty( "sources" )					List<Source>		sources;
 	
 
+	@Override
+	public int compareTo(Legislator o) {
+		return this.id.compareTo(o.id);
+	}
 	
 	
 	/**

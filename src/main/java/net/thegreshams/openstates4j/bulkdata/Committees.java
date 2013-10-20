@@ -31,17 +31,11 @@ public final class Committees {
 	}
 	
 	public static String findCommitteeKey(String committeeName, String chamber) {
-		String key = null;
 		for ( Committee committee: committees.values() ) {
 			if ( committeeName.contains(committee.committee) && !committeeName.equals(committee.committee) ) LOGGER.info("Legislator.Role.Committee.committee name issue: " + committeeName );
 			if ( (committee.committee.contains(committeeName) || committeeName.contains(committee.committee)) && (committee.chamber.equals(chamber) || committee.chamber.equals("joint")) ) return committee.id;
 		}
-		if ( key == null ) {
-			LOGGER.info("Committe Name Match Not Found:" + committeeName);
-		}
-		return key;
+		LOGGER.info("Committe Name Match Not Found:" + committeeName);
+		return null;
 	}
-	
-
-
 }

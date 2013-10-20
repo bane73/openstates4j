@@ -23,14 +23,14 @@ public class Committee extends Base {
 
 	private static final long serialVersionUID = 1L;
 	
-	public		@JsonProperty( "id" )							String			id;
-	public		@JsonProperty( "chamber" )						String			chamber;
-	public		@JsonProperty( "state" )						String			state;
-	public		@JsonProperty( "committee" )					String			committee;
-	public		@JsonProperty( "subcommittee" )					String			subCommittee;
-	public		@JsonProperty( "parentId" )						String			parentId;
-	public		@JsonProperty( "members" )						List<Member>	members;
-	public		@JsonProperty( "sources" )						List<Source>	sources;
+	public		String			id;
+	public		String			chamber;
+	public		String			state;
+	public		String			committee;
+	public		String			subCommittee;
+	public		String			parentId;
+	public		List<Member>	members;
+	public		List<Source>	sources;
 	
 
 	public Committee(String committeeName) {
@@ -53,12 +53,6 @@ public class Committee extends Base {
 		this.committee = committee;
 		this.subCommittee = subCommittee;
 		this.parentId = parentId;
-/*		
-		this.members = new ArrayList<Member>(members.size());
-		Collections.copy(this.members, members);
-		this.sources = new ArrayList<Source>(sources.size());
-		Collections.copy(this.sources, sources);
-*/
 		if ( members != null ) {
 			this.members = new ArrayList<Member>();
 			this.members.addAll(members);
