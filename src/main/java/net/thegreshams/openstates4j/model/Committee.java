@@ -1,7 +1,5 @@
 package net.thegreshams.openstates4j.model;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +30,9 @@ public class Committee extends Base {
 	public		List<Member>	members;
 	public		List<Source>	sources;
 	
+	public Committee(String committee) {
+		this.committee = committee;
+	}
 
 	public Committee(
 		@JsonProperty( "id" )							String			id, 
@@ -149,7 +150,7 @@ public class Committee extends Base {
 		
 	}
 	
-	public static List<Committee> find( Map<String, String> queryParameters ) throws OpenStatesException, UnsupportedEncodingException, URISyntaxException {
+	public static List<Committee> find( Map<String, String> queryParameters ) throws OpenStatesException {
 		
 		LOGGER.debug( "getting committees using query-parameters: " + queryParameters );
 		
@@ -158,7 +159,7 @@ public class Committee extends Base {
 		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Committee>>(){} );
 	}
 	
-	public static Committee get( String committeeId ) throws OpenStatesException, UnsupportedEncodingException, URISyntaxException {
+	public static Committee get( String committeeId ) throws OpenStatesException {
 		
 		LOGGER.debug( "getting committee for committee-id(" + committeeId + ")" );
 		
@@ -172,7 +173,7 @@ public class Committee extends Base {
 ////////////////////////////////////////////////////////////////////////////////
 
 	
-	public static void main( String[] args) throws OpenStatesException, UnsupportedEncodingException, URISyntaxException {
+	public static void main( String[] args) throws OpenStatesException {
 
 		// get the API key
 		String openStates_apiKey = null;

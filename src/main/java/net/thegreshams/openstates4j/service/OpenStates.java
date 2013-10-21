@@ -6,9 +6,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Iterator;
@@ -54,15 +56,15 @@ public class OpenStates {
 		OpenStates.apiKey = apiKey.trim();		
 	}
 
-	public static <T> T queryForJsonAndBuildObject( String queryPath, Class<T> valueType ) throws OpenStatesException, URISyntaxException {
+	public static <T> T queryForJsonAndBuildObject( String queryPath, Class<T> valueType ) throws OpenStatesException {
 		return OpenStates.queryForJsonAndBuildObject( queryPath, null, valueType );
 	}
 	
-	public static <T> T queryForJsonAndBuildObject( String queryPath, TypeReference<?> valueTypeRef ) throws OpenStatesException, URISyntaxException {
+	public static <T> T queryForJsonAndBuildObject( String queryPath, TypeReference<?> valueTypeRef ) throws OpenStatesException {
 		return OpenStates.queryForJsonAndBuildObject( queryPath, null, valueTypeRef );
 	}
 	
-	public static <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, TypeReference<?> valueTypeRef ) throws OpenStatesException, URISyntaxException {
+	public static <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, TypeReference<?> valueTypeRef ) throws OpenStatesException {
 
 		String jsonResponse = OpenStates.buildUrlQueryStringAndGetJsonResponse( queryPath, queryParams );
 		
@@ -78,14 +80,14 @@ public class OpenStates {
 ///////////////////////////////////////////////////////////////////////////////
 	
 
-	private static <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, Class<T> valueType ) throws OpenStatesException, URISyntaxException {
+	private static <T> T queryForJsonAndBuildObject( String queryPath, Map<String, String> queryParams, Class<T> valueType ) throws OpenStatesException {
 
 		String jsonResponse = OpenStates.buildUrlQueryStringAndGetJsonResponse( queryPath, queryParams );
 		
 		return OpenStates.mapObject( jsonResponse, valueType );
 	}
 	
-	private static String buildUrlQueryStringAndGetJsonResponse( String queryPath, Map<String, String> queryParameters ) throws OpenStatesException, URISyntaxException {
+	private static String buildUrlQueryStringAndGetJsonResponse( String queryPath, Map<String, String> queryParameters ) throws OpenStatesException {
 
 		URI urlQueryString = OpenStates.buildUrlQueryString( queryPath, queryParameters );
 		String jsonResponse = OpenStates.getJsonResponse( urlQueryString );
@@ -196,34 +198,42 @@ public class OpenStates {
 		return jsonResponse;
 	}
 	
-	private static URI buildUrlQueryString( String queryPath, Map<String, String> queryParameters ) throws OpenStatesException, URISyntaxException {
-		
+	private static URI buildUrlQueryString( String queryPath, Map<String, String> queryParameters ) throws OpenStatesException {
+
+
 		if( OpenStates.apiKey == null ) {
 			String msg = "you must first set your api-key like this: OpenStates.setApiKey( {YOUR_API_KEY} );" +
 							" you can obtain a key by visiting: http://services.sunlightlabs.com/";
 			LOGGER.fatal( msg );
 			throw new OpenStatesException( msg );
 		}
+
 		StringBuilder sb = new StringBuilder(  );
 		
 		sb.append( "apikey=" + OpenStates.apiKey );
-		
-		if( queryParameters != null ) {
-			Iterator<String> it = queryParameters.keySet().iterator();
-			while( it.hasNext() ) {
-				String key = it.next();
-				String value = queryParameters.get(key);
-				sb.append( "&" + key + "=" + value );
+		try {		
+			if( queryParameters != null ) {
+				Iterator<String> it = queryParameters.keySet().iterator();
+				while( it.hasNext() ) {
+					String key = it.next();
+					String value = queryParameters.get(key);
+						sb.append( "&" + key + "=" + URLEncoder.encode(value, "UTF-8") );
+				}
 			}
+			
+			return new URI (
+				"http", 
+				OpenStates.BASE_URL, 
+				"/api/v1/" + queryPath + "/", 
+				sb.toString(), 
+				null 
+			);
+		} catch ( URISyntaxException e ) {
+			throw new OpenStatesException(e.getMessage(), e);
+		} catch (UnsupportedEncodingException e) {
+			throw new OpenStatesException(e.getMessage(), e);
 		}
 		
-		return new URI (
-			"http", 
-			OpenStates.BASE_URL, 
-			"/api/v1/" + queryPath + "/", 
-			sb.toString(), 
-			null 
-		);
 	}
 	
 }

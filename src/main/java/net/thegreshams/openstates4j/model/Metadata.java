@@ -1,6 +1,5 @@
 package net.thegreshams.openstates4j.model;
 
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -74,7 +73,7 @@ public class Metadata extends Base {
 	}
 	
 	
-	public static Metadata get( String stateAbbr ) throws OpenStatesException, URISyntaxException {
+	public static Metadata get( String stateAbbr ) throws OpenStatesException {
 		
 		LOGGER.debug( "finding metadata for state(" + stateAbbr + ")" );
 		
@@ -83,7 +82,7 @@ public class Metadata extends Base {
 		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), Metadata.class );
 	}
 
-	public static void main( String[] args ) throws OpenStatesException, URISyntaxException {
+	public static void main( String[] args ) throws OpenStatesException {
 
 		// get the API key
 		String openStates_apiKey = null;

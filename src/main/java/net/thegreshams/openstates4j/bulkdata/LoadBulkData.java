@@ -70,6 +70,11 @@ public final class LoadBulkData {
 				}
 			}
 		}
+
+		for ( Bill bill: Bills.bills() ) {
+			Collections.sort(bill.actions);
+		}
+
 	}
 
 	private static void readBills(ObjectMapper mapper, ZipFile zipFile, String currentTerm) throws JsonParseException, JsonMappingException, IOException {

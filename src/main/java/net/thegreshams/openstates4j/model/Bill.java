@@ -1,6 +1,5 @@
 package net.thegreshams.openstates4j.model;
 
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
@@ -91,7 +90,7 @@ public final class Bill extends Base {
 	 * 
 	 * @author Brandon Gresham <brandon@thegreshams.net>
 	 */
-	public static class Action extends Base {
+	public static class Action extends Base implements Comparable<Action> {
 		
 		private static final long serialVersionUID = 1L;
 		
@@ -113,6 +112,11 @@ public final class Bill extends Base {
 				.append( "]" );
 			
 			return sb.toString();
+		}
+
+		@Override
+		public int compareTo(Action o) {
+			return date.compareTo(o.date);
 		}
 	}
 	
@@ -242,7 +246,7 @@ public final class Bill extends Base {
 	}
 	
 
-	public static List<Bill> find( Map<String, String> queryParameters ) throws OpenStatesException, URISyntaxException {
+	public static List<Bill> find( Map<String, String> queryParameters ) throws OpenStatesException {
 		
 		LOGGER.debug( "getting bills using query-parameters: " + queryParameters );
 	
@@ -251,10 +255,10 @@ public final class Bill extends Base {
 		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Bill>>(){} );
 	}
 	
-	public static Bill get( String stateAbbr, String session, String billId ) throws OpenStatesException, URISyntaxException {
+	public static Bill get( String stateAbbr, String session, String billId ) throws OpenStatesException {
 		return Bill.get( stateAbbr, session, billId, null );
 	}
-	public static Bill get( String stateAbbr, String session, String billId, String chamber ) throws OpenStatesException, URISyntaxException {
+	public static Bill get( String stateAbbr, String session, String billId, String chamber ) throws OpenStatesException {
 		
 		LOGGER.debug( "getting bill for bill-id(" + billId + "), state(" + stateAbbr + "), session(" + session + ")" +
 						( chamber == null ? "" : (", chamber(" + chamber + ")") ) );
@@ -277,7 +281,7 @@ public final class Bill extends Base {
 	
 	 
 	
-	public static void main( String[] args) throws OpenStatesException, URISyntaxException {
+	public static void main( String[] args) throws OpenStatesException {
 
 		// get the API key
 		String openStates_apiKey = null;

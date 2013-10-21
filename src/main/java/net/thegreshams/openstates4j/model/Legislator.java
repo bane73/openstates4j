@@ -1,6 +1,5 @@
 package net.thegreshams.openstates4j.model;
 
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +81,7 @@ public class Legislator extends Base implements Comparable<Legislator> {
 		public		@JsonProperty( "chamber" )					String				chamber;
 		public		@JsonProperty( "district" )					String				district;
 		public		@JsonProperty( "party" )					String				party;
-		public		@JsonProperty( "committee" )				String				committee;
+		public		@JsonProperty( "committee" )				Committee			committee;
 
 		@Override
 		public String toString() {
@@ -116,7 +115,7 @@ public class Legislator extends Base implements Comparable<Legislator> {
 		return sb.toString();
 	}
 	
-	public static List<Legislator> find( Map<String, String> queryParameters ) throws OpenStatesException, URISyntaxException {
+	public static List<Legislator> find( Map<String, String> queryParameters ) throws OpenStatesException {
 		
 		LOGGER.debug( "getting legislators using query-parameters: " + queryParameters );
 		
@@ -125,7 +124,7 @@ public class Legislator extends Base implements Comparable<Legislator> {
 		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), queryParameters, new TypeReference<List<Legislator>>(){} );
 	}
 	
-	public static Legislator get( String legislatorId ) throws OpenStatesException, URISyntaxException {
+	public static Legislator get( String legislatorId ) throws OpenStatesException {
 		
 		LOGGER.debug( "getting legislator for legislator-id(" + legislatorId + ")" );
 		
@@ -134,7 +133,7 @@ public class Legislator extends Base implements Comparable<Legislator> {
 		return OpenStates.queryForJsonAndBuildObject( sbQueryPath.toString(), Legislator.class );
 	}
 	
-	public static List<Legislator> find( String longitude, String latitude ) throws OpenStatesException, URISyntaxException {
+	public static List<Legislator> find( String longitude, String latitude ) throws OpenStatesException {
 		
 		LOGGER.debug( "getting legislators using longitude(" + longitude + ") and latitude(" + latitude + ")" );
 
@@ -149,7 +148,7 @@ public class Legislator extends Base implements Comparable<Legislator> {
 	
 	
 
-	public static void main( String[] args ) throws OpenStatesException, URISyntaxException {
+	public static void main( String[] args ) throws OpenStatesException {
 
 		// get the API key
 		String openStates_apiKey = null;
