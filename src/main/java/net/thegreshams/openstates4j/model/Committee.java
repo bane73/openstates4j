@@ -33,10 +33,6 @@ public class Committee extends Base {
 	public		List<Source>	sources;
 	
 
-	public Committee(String committeeName) {
-		this.committee = committeeName;
-	}
-	
 	public Committee(
 		@JsonProperty( "id" )							String			id, 
 		@JsonProperty( "chamber" )						String			chamber, 

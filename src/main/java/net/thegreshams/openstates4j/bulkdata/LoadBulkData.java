@@ -59,23 +59,9 @@ public final class LoadBulkData {
 		// map Legislator.Role.Committee to actual Committee objects.
 		// sort Committee.members
 		PostProcess();
-		
 	}
 	
 	private static void PostProcess() {
-		// put full Committee references into Legislator.Roles
-		for ( Legislator legislator: Legislators.legislators() ) {
-			for ( Legislator.Role role: legislator.roles ) {
-				if ( role.committee != null ) {
-					// note that not all roles describe membership in a committee
-					if ( role.committee.committee != null ) {
-						String key = Committees.findCommitteeKey( role.committee.committee, legislator.chamber);
-						Committee committee = Committees.get( key );
-						role.committee = committee;
-					}
-				}
-			}
-		}
 		for ( Committee committee: Committees.committees() ) {
 			Collections.sort(committee.members);
 			for ( Committee.Member member: committee.members ) {

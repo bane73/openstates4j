@@ -3,17 +3,13 @@ package net.thegreshhams.openstates4j.bulkdata;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
 import net.thegreshams.openstates4j.bulkdata.Bills;
-import net.thegreshams.openstates4j.bulkdata.Committees;
 import net.thegreshams.openstates4j.bulkdata.Legislators;
 import net.thegreshams.openstates4j.bulkdata.LoadBulkData;
 import net.thegreshams.openstates4j.model.Bill;
-import net.thegreshams.openstates4j.model.Committee;
 import net.thegreshams.openstates4j.model.Legislator;
 
 import org.apache.log4j.Logger;
@@ -31,7 +27,7 @@ public class TestLoadBulkData {
 			throw new RuntimeException(e);
 		}
 	}
-	
+/*
 	@Test
 	public void testCommitteeConsistencyCheck() {
 		TreeMap<String, ArrayList<String>> committeeMembersByLegislators = new TreeMap<String, ArrayList<String>>();
@@ -90,7 +86,8 @@ public class TestLoadBulkData {
 			}
 		}
 	}
-	
+*/
+
 	class PartyStat {
 		int memberCount = 0;
 		int billsPassed = 0;
