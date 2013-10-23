@@ -1,12 +1,10 @@
 package net.thegreshams.openstates4j.model;
 
-import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.thegreshams.openstates4j.model.Committee.Member;
 import net.thegreshams.openstates4j.service.OpenStates;
 import net.thegreshams.openstates4j.service.OpenStatesException;
 
@@ -64,32 +62,6 @@ public final class Event extends Base {
 	}
 	
 
-	/**
-	 * Source
-	 * 
-	 * @author Brandon Gresham <brandon@thegreshams.net>
-	 */
-	public static class Source extends Base {
-		
-		private static final long serialVersionUID = 1L;
-		
-		public		@JsonProperty( "url" )				URL						url;
-
-		@Override
-		public String toString() {
-			
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append( Member.class.getSimpleName() )
-				.append( " [" )
-				.append( "(url:" ).append( this.url ).append( ") " )
-				.append( "]" );
-			
-			return sb.toString();
-		}
-	}
-
-	
 	
 	/**
 	 * toString()

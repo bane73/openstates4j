@@ -62,15 +62,20 @@ public final class LoadBulkData {
 	}
 	
 	private static void PostProcess() {
+		// weave Legislator into Committee.Member
 		for ( Committee committee: Committees.committees() ) {
+			// Sort it, but I'm not sure why
+			// Anyway, if you want to get find a committee.member, now
+			// you can use Collections.binarySearch(.., Legislator.id)
 			Collections.sort(committee.members);
 			for ( Committee.Member member: committee.members ) {
 				if ( member.legislator != null && member.legislator.id != null ) {
-					member.legislator = Legislators.get(member.legislator.id);
+					Legislator tleg = Legislators.get(member.legislator.id);
+					if ( tleg != null ) member.legislator = tleg;
 				}
 			}
 		}
-
+		// sort actions ...
 		for ( Bill bill: Bills.bills() ) {
 			Collections.sort(bill.actions);
 		}

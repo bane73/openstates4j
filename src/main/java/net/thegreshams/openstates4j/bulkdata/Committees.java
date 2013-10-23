@@ -29,4 +29,17 @@ public final class Committees {
 	public static Collection<Committee> committees() {
 		return committees.values();
 	}
+
+	public static TreeMap<String, Committee> findAllCommittees(String legislatorId) {
+		TreeMap<String, Committee> byLegislator = new TreeMap<>();
+		for ( Committee committee: committees.values() ) {
+			for ( Committee.Member member: committee.members ) {
+				if ( member.legislator.id != null && member.legislator.id.equals(legislatorId) ) {
+					byLegislator.put(committee.id, committee);
+				}
+			}
+		}
+		return byLegislator;
+	}
+	
 }

@@ -1,7 +1,5 @@
 package net.thegreshams.openstates4j.model;
 
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,40 +28,25 @@ public class Committee extends Base {
 	public		List<Member>	members;
 	public		List<Source>	sources;
 	
+	public Committee() {}
 	public Committee(String committee) {
 		this.committee = committee;
 	}
-
-	public Committee(
-		@JsonProperty( "id" )							String			id, 
-		@JsonProperty( "chamber" )						String			chamber, 
-		@JsonProperty( "state" )						String			state, 
-		@JsonProperty( "committee" )					String			committee, 
-		@JsonProperty( "subcommittee" )					String			subCommittee, 
-		@JsonProperty( "parentId" )						String			parentId, 
-		@JsonProperty( "members" )						List<Member>	members, 
-		@JsonProperty( "sources" )						List<Source>	sources 
-	) {
-		this.id = id;
-		this.chamber = chamber;
-		this.state = state;
-		this.committee = committee;
-		this.subCommittee = subCommittee;
-		this.parentId = parentId;
-		if ( members != null ) {
-			this.members = new ArrayList<Member>();
-			this.members.addAll(members);
-		}
-		if ( sources != null ) {
-			this.sources = new ArrayList<Source>();
-			this.sources.addAll(sources);
-		}
-	}
-	
 	/**
-	 * Member
+	 * Member. This class uses a Legislator object to store information.
+	 * So, if you used the API, then only the legislator.fullName, 
+	 * Legislator.id, and this.role is filled out. If you used
+	 * the BulkData calls, then everything will be filled out, 
+	 * and the Legislator is a shallow copy of a Legislator in 
+	 * the Legislators list.
+	 * 
+	 * If you used the BulkData interface then this has been sorted
+	 * and you can use  Collections.binarySearch(.., Legislator.id)
+	 * to find a member.
 	 * 
 	 * @author Brandon Gresham <brandon@thegreshams.net>
+	 * @author Karl Nicholas <karlnicholas on github>
+	 * 
 	 */
 	public static class Member extends Base implements Comparable<Member> {
 		
@@ -76,7 +59,6 @@ public class Committee extends Base {
 		public Legislator legislator;
 		public String role;
 
-//		public Member() {}
 		public Member(
 			@JsonProperty( "name" ) String name, 
 			@JsonProperty( "role" ) String role, 
@@ -122,32 +104,6 @@ public class Committee extends Base {
 			else return legislator.id.compareTo(o.legislator.id);
 		}
 
-	}
-	
-	/**
-	 * Source
-	 * 
-	 * @author Brandon Gresham <brandon@thegreshams.net>
-	 */
-	public static class Source extends Base {
-		
-		private static final long serialVersionUID = 1L;
-		
-		public		@JsonProperty( "source" )						URL				source;
-		
-		@Override
-		public String toString() {
-			
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append( Member.class.getSimpleName() )
-				.append( " [" )
-				.append( "(source:" ).append( this.source ).append( ") " )
-				.append( "]" );
-			
-			return sb.toString();
-		}
-		
 	}
 	
 	public static List<Committee> find( Map<String, String> queryParameters ) throws OpenStatesException {

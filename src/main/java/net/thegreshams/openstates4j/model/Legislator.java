@@ -41,34 +41,14 @@ public class Legislator extends Base implements Comparable<Legislator> {
 		return this.id.compareTo(o.id);
 	}
 	
-	
 	/**
-	 * Source
-	 * 
-	 * @author Brandon Gresham <brandon@thegreshams.net>
-	 */
-	public static class Source extends Base {
-		
-		private static final long serialVersionUID = 1L;
-		
-		public		@JsonProperty( "url" )						URL					url;
-
-		@Override
-		public String toString() {
-			
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append( Member.class.getSimpleName() )
-				.append( " [" )
-				.append( "(url:" ).append( this.url ).append( ") " )
-				.append( "]" );
-			
-			return sb.toString();
-		}
-	}
-
-	/**
-	 * Role
+	 * Role. This class has limited usefulness. The
+	 * committee name might be ambiguous, e.x., it may be a name
+	 * that cannot be uniquely found in the list of committees.
+	 *  
+	 * If you need the list a committees a legislator belongs to it is
+	 * better to check all the committees. 
+	 * See Committees.getAllCommittees(String legislatorId);
 	 * 
 	 * @author Brandon Gresham <brandon@thegreshams.net>
 	 */
@@ -76,13 +56,13 @@ public class Legislator extends Base implements Comparable<Legislator> {
 		
 		private static final long serialVersionUID = 1L;
 		
-		public		@JsonProperty( "type" )						String				type;
+		public	 	@JsonProperty( "type" )						String				type;
 		public		@JsonProperty( "term" )						String				term;
-		public		@JsonProperty( "chamber" )					String				chamber;
-		public		@JsonProperty( "district" )					String				district;
-		public		@JsonProperty( "party" )					String				party;
-		public		@JsonProperty( "committee" )				Committee			committee;
-
+		public	 	@JsonProperty( "chamber" )					String				chamber;
+		public	 	@JsonProperty( "district" )					String				district;
+		public	 	@JsonProperty( "party" )					String				party;
+		public	 	@JsonProperty( "committee" )				String				committee;
+		
 		@Override
 		public String toString() {
 			
