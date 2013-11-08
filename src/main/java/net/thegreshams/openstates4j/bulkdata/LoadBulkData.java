@@ -19,6 +19,22 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Static methods to load the bulk data files from the openstates.org site. 
+ * This is in addition to using the API's. These calls and the API calls are 
+ * not integrated. In other words, API calls do not fill out these
+ * classes. There is no 'caching' done. It may be a good idea to 
+ * add this feature, but these classes strictly load up
+ * a single bulkdata file. Also, currently there is a method
+ * for 'LoadCurrentTerm' For the legislator's, the isActive 
+ * flag is checked. For committees, nothing is checked. For
+ * bills, a string for the year is passed in and compared to 
+ * the directory name within the .zip bulkfile. That's bad form.
+ * It should be looking at the session field in the bill.  
+ * 
+ * @author Karl Nicholas (karlnicholas on github.com)
+ *
+ */
 public final class LoadBulkData {
 	protected static final Logger LOGGER = Logger.getRootLogger();
 	
@@ -60,7 +76,13 @@ public final class LoadBulkData {
 		// sort Committee.members
 		PostProcess();
 	}
-	
+
+	/**
+	 * This will fill out the Legislator references in the committee
+	 * class with references to pre-loaded legislators. Without
+	 * this call, then only a couple of Legislator objects are filled 
+	 * out in the Committee class.
+	 */
 	private static void PostProcess() {
 		// weave Legislator into Committee.Member
 		for ( Committee committee: Committees.committees() ) {

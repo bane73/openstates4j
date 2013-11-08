@@ -1,4 +1,4 @@
-package net.thegreshhams.openstates4j.bulkdata;
+package net.thegreshams.openstates4j.bulkdata;
 
 
 import static org.junit.Assert.assertTrue;
