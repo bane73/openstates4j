@@ -6,11 +6,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Iterator;
@@ -217,7 +215,7 @@ public class OpenStates {
 				while( it.hasNext() ) {
 					String key = it.next();
 					String value = queryParameters.get(key);
-						sb.append( "&" + key + "=" + URLEncoder.encode(value, "UTF-8") );
+						sb.append( "&" + key + "=" + value );
 				}
 			}
 			
@@ -229,8 +227,6 @@ public class OpenStates {
 				null 
 			);
 		} catch ( URISyntaxException e ) {
-			throw new OpenStatesException(e.getMessage(), e);
-		} catch (UnsupportedEncodingException e) {
 			throw new OpenStatesException(e.getMessage(), e);
 		}
 		
